@@ -3,11 +3,11 @@
 <div class="input-section" style="grid-column: span 2;">
     
     <!-- Sub-Tab Master Data -->
-    <div style="text-align: center; margin-bottom: 2rem;">
-        <div class="nav-tabs" style="background: rgba(0,0,0,0.05); border: 1px solid var(--border);">
-            <button class="tab-btn active" onclick="switchSubTab('sub-pelanggan')"><i data-lucide="users"></i> Pelanggan</button>
-            <button class="tab-btn" onclick="switchSubTab('sub-barang')"><i data-lucide="package"></i> Barang</button>
-            <button class="tab-btn" onclick="switchSubTab('sub-servis')"><i data-lucide="tool"></i> Servis</button>
+    <div style="max-width: 800px; margin: 0 auto 2rem auto;">
+        <div class="settings-tabs">
+            <button class="tab-link active" onclick="switchSubTab('sub-pelanggan')"><i data-lucide="users"></i> Pelanggan</button>
+            <button class="tab-link" onclick="switchSubTab('sub-barang')"><i data-lucide="package"></i> Barang</button>
+            <button class="tab-link" onclick="switchSubTab('sub-servis')"><i data-lucide="tool"></i> Servis</button>
         </div>
     </div>
 
@@ -30,7 +30,7 @@
                                 <th>Nama</th>
                                 <th>No. HP</th>
                                 <th>Alamat</th>
-                                <th style="width: 80px;">Aksi</th>
+                                <th style="width: 120px;">Aksi</th>
                             </tr>
                         </thead>
                         <tbody id="list-customers"></tbody>
@@ -55,7 +55,7 @@
                             <tr>
                                 <th>Nama Barang</th>
                                 <th>Harga</th>
-                                <th style="width: 80px;">Aksi</th>
+                                <th style="width: 120px;">Aksi</th>
                             </tr>
                         </thead>
                         <tbody id="list-products"></tbody>
@@ -80,7 +80,7 @@
                             <tr>
                                 <th>Jenis Layanan</th>
                                 <th>Biaya</th>
-                                <th style="width: 80px;">Aksi</th>
+                                <th style="width: 120px;">Aksi</th>
                             </tr>
                         </thead>
                         <tbody id="list-services"></tbody>
@@ -98,14 +98,13 @@
             content.style.display = 'none';
         });
         // Remove active class from sub-tab buttons
-        const subTabs = document.querySelector('.input-section .nav-tabs');
-        subTabs.querySelectorAll('.tab-btn').forEach(btn => {
+        document.querySelectorAll('.settings-tabs .tab-link').forEach(btn => {
             btn.classList.remove('active');
         });
 
         // Show target
         document.getElementById(tabId).style.display = 'block';
-        // Add active to button
+        // Add active to current button
         event.currentTarget.classList.add('active');
     }
 </script>

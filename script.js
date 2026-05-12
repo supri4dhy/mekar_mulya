@@ -224,8 +224,10 @@ function renderMasterLists() {
                     <td>${item.hp || '-'}</td>
                     <td>${item.address || '-'}</td>
                     <td>
-                        <button class="btn-edit" onclick="startEdit('customers', ${item.id})"><i data-lucide="edit-3" style="width:14px"></i></button>
-                        <button class="btn-remove" onclick="removeMaster('customers', ${item.id})"><i data-lucide="trash-2" style="width:14px"></i></button>
+                        <div class="action-btns">
+                            <button class="btn-edit" title="Edit" onclick="startEdit('customers', ${item.id})"><i data-lucide="edit-3" style="width:16px; height:16px;"></i></button>
+                            <button class="btn-remove" title="Hapus" onclick="removeMaster('customers', ${item.id})"><i data-lucide="trash-2" style="width:16px; height:16px;"></i></button>
+                        </div>
                     </td>
                 `;
             } else {
@@ -233,8 +235,10 @@ function renderMasterLists() {
                     <td>${item.name}</td>
                     <td>${formatRupiah(item.price)}</td>
                     <td>
-                        <button class="btn-edit" onclick="startEdit('${type}', ${item.id})"><i data-lucide="edit-3" style="width:14px"></i></button>
-                        <button class="btn-remove" onclick="removeMaster('${type}', ${item.id})"><i data-lucide="trash-2" style="width:14px"></i></button>
+                        <div class="action-btns">
+                            <button class="btn-edit" title="Edit" onclick="startEdit('${type}', ${item.id})"><i data-lucide="edit-3" style="width:16px; height:16px;"></i></button>
+                            <button class="btn-remove" title="Hapus" onclick="removeMaster('${type}', ${item.id})"><i data-lucide="trash-2" style="width:16px; height:16px;"></i></button>
+                        </div>
                     </td>
                 `;
             }
@@ -247,13 +251,17 @@ function renderMasterLists() {
 function updateDataLists() {
     const dlCust = document.getElementById('dl-customers');
     if (dlCust) {
-        dlCust.innerHTML = masterData.customers.map(c => `<option value="${c.name}">${c.hp || ''} - ${c.address || ''}</option>`).join('');
+        const sortedCust = [...masterData.customers].sort((a, b) => a.name.localeCompare(b.name));
+        dlCust.innerHTML = sortedCust.map(c => `<option value="${c.name}">${c.hp || ''} - ${c.address || ''}</option>`).join('');
     }
 
     const dlItems = document.getElementById('dl-items');
     if (dlItems) {
-        const products = masterData.products.map(p => `<option value="${p.name}">Barang - ${formatRupiah(p.price)}</option>`);
-        const services = masterData.services.map(s => `<option value="${s.name}">Jasa - ${formatRupiah(s.price)}</option>`);
+        const sortedProducts = [...masterData.products].sort((a, b) => a.name.localeCompare(b.name));
+        const sortedServices = [...masterData.services].sort((a, b) => a.name.localeCompare(b.name));
+        
+        const products = sortedProducts.map(p => `<option value="${p.name}">Barang - ${formatRupiah(p.price)}</option>`);
+        const services = sortedServices.map(s => `<option value="${s.name}">Jasa - ${formatRupiah(s.price)}</option>`);
         dlItems.innerHTML = [...products, ...services].join('');
     }
 }
@@ -557,6 +565,7 @@ function resetForm() {
         document.getElementById('noteNumber').value = '';
         document.getElementById('noteFooter').value = '';
         document.getElementById('inputDiscount').value = 0;
+        document.getElementById('inputTransport').value = 0;
         document.getElementById('inputService').value = 0;
         selectedCustomer = null;
         currentInvoiceIndex = null;
@@ -620,8 +629,9 @@ async function saveInvoice() {
 
     const subtotal = items.reduce((a, b) => a + (b.qty * b.price), 0);
     const discount = parseFloat(document.getElementById('inputDiscount').value) || 0;
+    const transport = parseFloat(document.getElementById('inputTransport').value) || 0;
     const service = parseFloat(document.getElementById('inputService').value) || 0;
-    const grandTotal = subtotal + service - discount;
+    const grandTotal = subtotal + service + transport - discount;
 
     const invoiceData = {
         number: noteNum,
@@ -630,6 +640,7 @@ async function saveInvoice() {
         items: items,
         subtotal: subtotal,
         discount: discount,
+        transport: transport,
         service: service,
         total: grandTotal
     };
@@ -750,11 +761,13 @@ function updatePreview() {
     });
 
     const discount = parseFloat(document.getElementById('inputDiscount').value) || 0;
+    const transport = parseFloat(document.getElementById('inputTransport').value) || 0;
     const service = parseFloat(document.getElementById('inputService').value) || 0;
-    const grandTotal = subtotal + service - discount;
+    const grandTotal = subtotal + service + transport - discount;
 
     document.getElementById('viewSubtotal').innerText = formatRupiah(subtotal);
     document.getElementById('viewService').innerText = formatRupiah(service);
+    document.getElementById('viewTransport').innerText = formatRupiah(transport);
     document.getElementById('viewDiscount').innerText = '- ' + formatRupiah(discount);
     document.getElementById('viewGrandTotal').innerText = formatRupiah(grandTotal);
 
@@ -780,6 +793,7 @@ async function loadInvoiceFromHistory(index) {
         document.getElementById('noteDate').value = inv.date;
         document.getElementById('customerName').value = inv.customer;
         document.getElementById('inputDiscount').value = inv.discount || 0;
+        document.getElementById('inputTransport').value = inv.transport || 0;
         document.getElementById('inputService').value = inv.service || 0;
 
         // Update Items global

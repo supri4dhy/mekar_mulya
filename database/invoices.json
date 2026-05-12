@@ -208,5 +208,89 @@
         "service": 0,
         "total": 11900000,
         "timestamp": "2026-05-12 04:43:12"
+    },
+    {
+        "number": "MM-2\/KALTENG",
+        "customer": "Budi",
+        "date": "2026-05-12",
+        "items": [
+            {
+                "id": 1778572490240,
+                "description": "Kolmputer",
+                "qty": 1,
+                "price": 5800000
+            },
+            {
+                "id": 1778572523135,
+                "description": "Servis TV",
+                "qty": 1,
+                "price": 500000
+            },
+            {
+                "id": 1778572524185,
+                "description": "Kipas Angin",
+                "qty": 1,
+                "price": 300000
+            },
+            {
+                "id": 1778572524967,
+                "description": "Kolmputer",
+                "qty": 1,
+                "price": 5800000
+            },
+            {
+                "id": 1778572649335,
+                "description": "",
+                "qty": 1,
+                "price": 0
+            },
+            {
+                "id": 1778572650941,
+                "description": "",
+                "qty": 1,
+                "price": 0
+            },
+            {
+                "id": 1778572651980,
+                "description": "",
+                "qty": 1,
+                "price": 0
+            },
+            {
+                "id": 1778572653515,
+                "description": "",
+                "qty": 1,
+                "price": 0
+            },
+            {
+                "id": 1778572654611,
+                "description": "",
+                "qty": 1,
+                "price": 0
+            },
+            {
+                "id": 1778572656879,
+                "description": "",
+                "qty": 1,
+                "price": 0
+            },
+            {
+                "id": 1778572661086,
+                "description": "",
+                "qty": 1,
+                "price": 0
+            },
+            {
+                "id": 1778572662145,
+                "description": "",
+                "qty": 1,
+                "price": 0
+            }
+        ],
+        "subtotal": 12400000,
+        "discount": 0,
+        "service": 0,
+        "total": 12400000,
+        "timestamp": "2026-05-12 07:57:49"
     }
 ]

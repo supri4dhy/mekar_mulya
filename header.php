@@ -22,10 +22,10 @@ $currentPage = basename($_SERVER['PHP_SELF']);
         
         <nav class="nav-tabs">
             <a href="nota.php" class="tab-btn <?= $currentPage == 'nota.php' ? 'active' : '' ?>" style="text-decoration: none;">
-                <i data-lucide="file-text"></i> Buat Nota
+                <i data-lucide="file-text"></i> Nota
             </a>
             <a href="master.php" class="tab-btn <?= $currentPage == 'master.php' ? 'active' : '' ?>" style="text-decoration: none;">
-                <i data-lucide="database"></i> Data Master
+                <i data-lucide="database"></i> Data
             </a>
             <a href="history.php" class="tab-btn <?= $currentPage == 'history.php' ? 'active' : '' ?>" style="text-decoration: none;">
                 <i data-lucide="history"></i> Riwayat

@@ -29,8 +29,8 @@
         <table class="items-table">
             <thead>
                 <tr>
-                    <th style="width: 45%;">Barang / Jasa</th>
-                    <th style="width: 10%;">Qty</th>
+                    <th style="width: 40%;">Barang / Jasa</th>
+                    <th style="width: 15%;">Qty</th>
                     <th style="width: 20%;">Harga</th>
                     <th style="width: 20%;">Total</th>
                     <th style="width: 5%;"></th>
@@ -57,6 +57,10 @@
                         <input type="number" id="inputDiscount" value="0" style="width: 150px;" oninput="updatePreview()">
                     </div>
                     <div class="form-group" style="display: flex; align-items: center; justify-content: space-between; margin-top: 1rem;">
+                        <label style="margin:0;">Biaya Transport (Rp)</label>
+                        <input type="number" id="inputTransport" value="0" style="width: 150px;" oninput="updatePreview()">
+                    </div>
+                    <div class="form-group" style="display: flex; align-items: center; justify-content: space-between; margin-top: 1rem;">
                         <label style="margin:0;">Biaya Servis (Rp)</label>
                         <input type="number" id="inputService" value="0" style="width: 150px;" oninput="updatePreview()">
                     </div>
@@ -64,22 +68,24 @@
             </div>
         </div>
 
-        <div class="btn-section" style="margin-top: 2rem; display: flex; gap: 0.75rem; justify-content: flex-end; flex-wrap: wrap;">
-            <button class="btn" onclick="resetForm()" style="background: #fff; border: 1px solid var(--border); color: var(--text-muted); padding: 0.75rem 1rem;">
-                <i data-lucide="refresh-ccw"></i> Reset
-            </button>
-            <button class="btn btn-primary" onclick="saveInvoice()" style="background: var(--primary); padding: 0.75rem 1.5rem;">
-                <i data-lucide="save"></i> Simpan Nota
-            </button>
-            <button class="btn" id="btnDownload" onclick="downloadPDF()" style="background: var(--accent); color: white; padding: 0.75rem 1.5rem;">
-                <i data-lucide="download"></i> Download PDF (A5)
-            </button>
-        </div>
     </div>
 </div>
 
 <!-- Preview Section -->
 <div class="preview-section">
+    <!-- Action Buttons (Sticky at Top) -->
+    <div class="btn-section" style="position: sticky; top: 0; z-index: 100; background: var(--background); padding: 0.75rem 0; display: flex; gap: 0.4rem; justify-content: stretch; border-bottom: 1px solid var(--border); margin-bottom: 1rem;">
+        <button class="btn" onclick="resetForm()" style="flex: 1; background: #fff; border: 1px solid var(--border); color: var(--text-muted); padding: 0.6rem 0.25rem; justify-content: center; font-size: 0.75rem; white-space: nowrap;">
+            <i data-lucide="refresh-ccw" style="width: 12px;"></i> Reset
+        </button>
+        <button class="btn btn-primary" onclick="saveInvoice()" style="flex: 1.5; background: var(--primary); padding: 0.6rem 0.25rem; justify-content: center; font-size: 0.75rem; white-space: nowrap;">
+            <i data-lucide="save" style="width: 12px;"></i> Simpan Nota
+        </button>
+        <button class="btn" id="btnDownload" onclick="downloadPDF()" style="flex: 1.5; background: var(--accent); color: white; padding: 0.6rem 0.25rem; justify-content: center; font-size: 0.75rem; white-space: nowrap;">
+            <i data-lucide="download" style="width: 12px;"></i> Download PDF
+        </button>
+    </div>
+
     <div id="captureArea" class="note-preview">
         <!-- Header & Customer Info dalam satu blok kompak -->
         <div class="note-header" style="display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 1.5px solid #000; padding-bottom: 0.5rem; margin-bottom: 0.75rem;">
@@ -120,6 +126,7 @@
             <div class="total-section" style="margin-top: 0; width: 220px;">
                 <div class="total-row"><span>Subtotal</span><span id="viewSubtotal">Rp 0</span></div>
                 <div class="total-row"><span>Servis</span><span id="viewService">Rp 0</span></div>
+                <div class="total-row"><span>Transport</span><span id="viewTransport">Rp 0</span></div>
                 <div class="total-row"><span>Diskon</span><span id="viewDiscount">- Rp 0</span></div>
                 <div class="total-row grand-total"><span>TOTAL</span><span id="viewGrandTotal">Rp 0</span></div>
             </div>
@@ -141,6 +148,7 @@
             Terima kasih.
         </div>
     </div>
+
 </div>
 
 <?php include 'footer.php'; ?>

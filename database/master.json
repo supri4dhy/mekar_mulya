@@ -40,6 +40,11 @@
             "id": 1778561651397,
             "name": "Servis TV",
             "price": 500000
+        },
+        {
+            "id": 1778575797352,
+            "name": "Servis Mesin Cuci",
+            "price": 520000
         }
     ]
 }
