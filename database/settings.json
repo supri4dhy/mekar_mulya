@@ -1,0 +1,12 @@
+{
+    "logoPath": "uploads\/logo.png",
+    "bizName": "CV. SINAR MULYA",
+    "bizType": "Servis & Maintenance",
+    "bizOwner": "Iwan",
+    "bizPhone": "0812 7207 0908 \/ 0815 2523 8490",
+    "bizAddress": "Perumahan Bumi Asih \nPermai, Jl. Kumpai Batu Gg. VII Blok D-7\nPangkalan Bun Kalimantan Tengah ",
+    "noteFooterDefault": "Terima kasih.",
+    "notePrefix": "MM-",
+    "noteSuffix": "\/KALTENG",
+    "noteNextNumber": 2
+}

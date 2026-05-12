@@ -1,0 +1,45 @@
+{
+    "customers": [
+        {
+            "id": 1778556599604,
+            "name": "Budi",
+            "hp": "0812123585",
+            "address": "Pangkalan Bun"
+        },
+        {
+            "id": 1778556821673,
+            "name": "Agus",
+            "hp": "081525565",
+            "address": "Nanga Bulik"
+        }
+    ],
+    "products": [
+        {
+            "id": 1778558810053,
+            "name": "Kolmputer",
+            "price": 5800000
+        },
+        {
+            "id": 1778558819493,
+            "name": "Kipas Angin",
+            "price": 300000
+        },
+        {
+            "id": 1778558832666,
+            "name": "Kulkas",
+            "price": 2500000
+        }
+    ],
+    "services": [
+        {
+            "id": 1778561641872,
+            "name": "Servis AC",
+            "price": 50000
+        },
+        {
+            "id": 1778561651397,
+            "name": "Servis TV",
+            "price": 500000
+        }
+    ]
+}

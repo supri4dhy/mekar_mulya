@@ -1,0 +1,212 @@
+[
+    {
+        "number": "001",
+        "customer": "Agus",
+        "date": "2026-05-12",
+        "items": [
+            {
+                "id": 1778558840808,
+                "description": "Kipas Angin",
+                "qty": 2,
+                "price": 300000
+            },
+            {
+                "id": 1778558847754,
+                "description": "Kulkas",
+                "qty": 1,
+                "price": 2500000
+            }
+        ],
+        "subtotal": 3100000,
+        "discount": 0,
+        "service": 0,
+        "total": 3100000,
+        "timestamp": "2026-05-12 04:43:24"
+    },
+    {
+        "number": "0002",
+        "customer": "Budi",
+        "date": "2026-05-12",
+        "items": [
+            {
+                "id": 1778559194875,
+                "description": "Kolmputer",
+                "qty": 1,
+                "price": 5800000
+            },
+            {
+                "id": 1778559222699,
+                "description": "Kolmputer",
+                "qty": 1,
+                "price": 5800000
+            },
+            {
+                "id": 1778559224597,
+                "description": "Kipas Angin",
+                "qty": 1,
+                "price": 300000
+            },
+            {
+                "id": 1778559227702,
+                "description": "Kipas Angin",
+                "qty": 1,
+                "price": 300000
+            },
+            {
+                "id": 1778559230621,
+                "description": "Kulkas",
+                "qty": 1,
+                "price": 2500000
+            }
+        ],
+        "subtotal": 14700000,
+        "discount": 0,
+        "service": 0,
+        "total": 14700000,
+        "timestamp": "2026-05-12 04:13:55"
+    },
+    {
+        "number": "0002",
+        "customer": "Budi",
+        "date": "2026-05-12",
+        "items": [
+            {
+                "id": 1778559194875,
+                "description": "Kolmputer",
+                "qty": 1,
+                "price": 5800000
+            },
+            {
+                "id": 1778559222699,
+                "description": "Kolmputer",
+                "qty": 1,
+                "price": 5800000
+            },
+            {
+                "id": 1778559224597,
+                "description": "Kipas Angin",
+                "qty": 1,
+                "price": 300000
+            },
+            {
+                "id": 1778559227702,
+                "description": "Kipas Angin",
+                "qty": 1,
+                "price": 300000
+            },
+            {
+                "id": 1778559230621,
+                "description": "Kulkas",
+                "qty": 1,
+                "price": 2500000
+            }
+        ],
+        "subtotal": 14700000,
+        "discount": 0,
+        "service": 0,
+        "total": 14700000,
+        "timestamp": "2026-05-12 04:20:40"
+    },
+    {
+        "number": "0002",
+        "customer": "Budi",
+        "date": "2026-05-12",
+        "items": [
+            {
+                "id": 1778559194875,
+                "description": "Kolmputer",
+                "qty": 1,
+                "price": 5800000
+            },
+            {
+                "id": 1778559222699,
+                "description": "Kolmputer",
+                "qty": 1,
+                "price": 5800000
+            },
+            {
+                "id": 1778559224597,
+                "description": "Kipas Angin",
+                "qty": 1,
+                "price": 300000
+            },
+            {
+                "id": 1778559227702,
+                "description": "Kipas Angin",
+                "qty": 1,
+                "price": 300000
+            }
+        ],
+        "subtotal": 12200000,
+        "discount": 0,
+        "service": 0,
+        "total": 12200000,
+        "timestamp": "2026-05-12 04:24:50"
+    },
+    {
+        "number": "0002",
+        "customer": "Budi",
+        "date": "2026-05-12",
+        "items": [
+            {
+                "id": 1778559194875,
+                "description": "Kolmputer",
+                "qty": 1,
+                "price": 5800000
+            },
+            {
+                "id": 1778559224597,
+                "description": "Kipas Angin",
+                "qty": 1,
+                "price": 300000
+            },
+            {
+                "id": 1778559227702,
+                "description": "Kipas Angin",
+                "qty": 1,
+                "price": 300000
+            },
+            {
+                "id": 1778559230621,
+                "description": "Kulkas",
+                "qty": 1,
+                "price": 2500000
+            }
+        ],
+        "subtotal": 8900000,
+        "discount": 0,
+        "service": 0,
+        "total": 8900000,
+        "timestamp": "2026-05-12 04:26:44"
+    },
+    {
+        "number": "0002",
+        "customer": "Budi",
+        "date": "2026-03-12",
+        "items": [
+            {
+                "id": 1778559194875,
+                "description": "Kolmputer",
+                "qty": 1,
+                "price": 5800000
+            },
+            {
+                "id": 1778559222699,
+                "description": "Kolmputer",
+                "qty": 1,
+                "price": 5800000
+            },
+            {
+                "id": 1778559227702,
+                "description": "Kipas Angin",
+                "qty": 1,
+                "price": 300000
+            }
+        ],
+        "subtotal": 11900000,
+        "discount": 0,
+        "service": 0,
+        "total": 11900000,
+        "timestamp": "2026-05-12 04:43:12"
+    }
+]
