@@ -7,6 +7,83 @@ function formatRupiah(number) {
     }).format(number);
 }
 
+// Custom Toast Notification System
+function showToast(message, type = 'success') {
+    // Create container if not exists
+    let container = document.querySelector('.toast-container');
+    if (!container) {
+        container = document.createElement('div');
+        container.className = 'toast-container';
+        document.body.appendChild(container);
+    }
+
+    // Create toast element
+    const toast = document.createElement('div');
+    toast.className = `toast-item ${type}`;
+
+    // Icon based on type
+    let icon = 'check-circle';
+    if (type === 'error') icon = 'alert-circle';
+    if (type === 'info') icon = 'info';
+
+    toast.innerHTML = `
+        <i data-lucide="${icon}"></i>
+        <span>${message}</span>
+    `;
+
+    container.appendChild(toast);
+    if (typeof lucide !== 'undefined') lucide.createIcons();
+
+    // Auto remove after 3 seconds
+    setTimeout(() => {
+        toast.classList.add('fade-out');
+        setTimeout(() => {
+            toast.remove();
+            if (container.childNodes.length === 0) container.remove();
+        }, 400);
+    }, 3000);
+}
+
+function parseCurrency(value) {
+    if (typeof value !== 'string') return value;
+    return parseFloat(value.replace(/\./g, '')) || 0;
+}
+
+function formatNumber(value) {
+    return value.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+}
+
+function handleCurrencyInput(el) {
+    let cursorPosition = el.selectionStart;
+    let originalLength = el.value.length;
+
+    // Get digits only
+    let value = el.value.replace(/\D/g, '');
+    if (value === '') value = '0';
+
+    // Format with dots
+    let formatted = formatNumber(parseInt(value));
+    el.value = formatted;
+
+    // Adjust cursor position
+    let newLength = el.value.length;
+    cursorPosition = cursorPosition + (newLength - originalLength);
+    el.setSelectionRange(cursorPosition, cursorPosition);
+
+    updatePreview();
+}
+
+function handleItemPriceInput(id, el) {
+    let value = el.value.replace(/\D/g, '');
+    if (value === '') value = '0';
+
+    let formatted = formatNumber(parseInt(value));
+    el.value = formatted;
+
+    updateItem(id, 'price', parseInt(value), false);
+    updatePreview();
+}
+
 // Initial State
 let currentInvoiceIndex = null;
 let items = [{ id: Date.now(), description: '', qty: 1, price: 0 }];
@@ -25,13 +102,13 @@ function switchTab(tabId) {
     document.querySelectorAll('.tab-link').forEach(link => {
         link.classList.remove('active');
     });
-    
+
     // Tampilkan tab yang dipilih
     const selectedPane = document.getElementById(tabId);
     if (selectedPane) {
         selectedPane.classList.add('active');
     }
-    
+
     // Aktifkan tombol yang diklik
     const activeBtn = document.querySelector(`.tab-link[onclick*="${tabId}"]`);
     if (activeBtn) {
@@ -48,12 +125,12 @@ async function changePassword() {
     const confP = document.getElementById('confirmPassword').value;
 
     if (!oldP || !newP || !confP) {
-        alert('Semua kolom password harus diisi!');
+        showToast('Semua kolom password harus diisi!', 'error');
         return;
     }
 
     if (newP !== confP) {
-        alert('Konfirmasi password baru tidak cocok!');
+        showToast('Konfirmasi password baru tidak cocok!', 'error');
         return;
     }
 
@@ -64,15 +141,15 @@ async function changePassword() {
         });
         const result = await res.json();
         if (result.success) {
-            alert('Password berhasil diubah!');
+            showToast('Password berhasil diubah!');
             document.getElementById('oldPassword').value = '';
             document.getElementById('newPassword').value = '';
             document.getElementById('confirmPassword').value = '';
         } else {
-            alert(result.message);
+            showToast(result.message, 'error');
         }
     } catch (e) {
-        alert('Terjadi kesalahan sistem.');
+        showToast('Terjadi kesalahan sistem.', 'error');
     }
 }
 
@@ -173,6 +250,7 @@ async function addMaster(type) {
     }
 
     await saveMasterToServer();
+    showToast(`Data ${type === 'customers' ? 'Pelanggan' : (type === 'products' ? 'Barang' : 'Servis')} berhasil ${editId ? 'diperbarui' : 'ditambahkan'}!`);
 }
 
 function startEdit(type, id) {
@@ -198,6 +276,7 @@ async function removeMaster(type, id) {
     if (confirm('Yakin ingin menghapus data ini?')) {
         masterData[type] = masterData[type].filter(item => item.id !== id);
         await saveMasterToServer();
+        showToast('Data berhasil dihapus!', 'info');
     }
 }
 
@@ -259,7 +338,7 @@ function updateDataLists() {
     if (dlItems) {
         const sortedProducts = [...masterData.products].sort((a, b) => a.name.localeCompare(b.name));
         const sortedServices = [...masterData.services].sort((a, b) => a.name.localeCompare(b.name));
-        
+
         const products = sortedProducts.map(p => `<option value="${p.name}">Barang - ${formatRupiah(p.price)}</option>`);
         const services = sortedServices.map(s => `<option value="${s.name}">Jasa - ${formatRupiah(s.price)}</option>`);
         dlItems.innerHTML = [...products, ...services].join('');
@@ -271,7 +350,7 @@ function renderSuffixes() {
     const listEl = document.getElementById('suffixList');
     const num = businessProfile.noteNextNumber || 1;
     const paddedNum = num.toString().padStart(3, '0');
-    
+
     // Check current active pattern
     const currentPattern = `${businessProfile.notePrefix}{n}${businessProfile.noteSuffix}`;
 
@@ -281,7 +360,7 @@ function renderSuffixes() {
             const isActive = (s === currentPattern);
             const isEditing = (editingSuffixIndex === idx);
             const item = document.createElement('div');
-            
+
             // Style for item
             item.style = `
                 background: ${isActive ? '#eff6ff' : 'white'}; 
@@ -295,7 +374,7 @@ function renderSuffixes() {
                 transition: all 0.2s;
                 ${isActive ? 'box-shadow: 0 4px 6px -1px rgba(59, 130, 246, 0.1);' : ''}
             `;
-            
+
             const preview = s.replace('{n}', paddedNum);
             item.innerHTML = `
                 <div style="flex: 1;" onclick="editTemplate(${idx})">
@@ -339,11 +418,11 @@ function editTemplate(idx) {
         document.getElementById('noteSuffix').value = parts[1];
         updateNumPreview();
     }
-    
+
     // Change button text
     const btn = document.querySelector('button[onclick="addSuffix()"]');
     if (btn) btn.innerText = 'Update';
-    
+
     renderSuffixes();
 }
 
@@ -353,18 +432,18 @@ async function activateTemplate(idx) {
     if (parts.length === 2) {
         businessProfile.notePrefix = parts[0];
         businessProfile.noteSuffix = parts[1];
-        
+
         // Update inputs
         document.getElementById('notePrefix').value = parts[0];
         document.getElementById('noteSuffix').value = parts[1];
         updateNumPreview();
-        
+
         // Save Settings
         await fetch('api.php?action=saveSettings', {
             method: 'POST',
             body: JSON.stringify(businessProfile)
         });
-        
+
         renderSuffixes();
     }
 }
@@ -384,7 +463,7 @@ async function addSuffix() {
         if (suffixes.includes(val)) return;
         suffixes.push(val);
     }
-    
+
     document.getElementById('newSuffix').value = '';
     renderSuffixes();
     await saveSuffixesToServer();
@@ -406,7 +485,7 @@ async function saveSuffixesToServer() {
 // Profile / Settings Logic
 function fillSettingsForm() {
     if (window.$currentPage !== 'settings.php') return;
-    
+
     const fields = ['bizName', 'bizType', 'bizOwner', 'bizPhone', 'bizAddress', 'noteFooterDefault', 'notePrefix', 'noteSuffix', 'noteNextNumber'];
     fields.forEach(f => {
         const el = document.getElementById(f);
@@ -429,7 +508,7 @@ function fillSettingsForm() {
         if (el) el.addEventListener('input', updateNumPreview);
     });
     updateNumPreview();
-    
+
     // Fetch last number reference
     fetch('api.php?action=getLastInvoiceNumber')
         .then(res => res.json())
@@ -486,18 +565,12 @@ async function saveProfile() {
     });
 
     if (res.ok) {
-        const btn = document.querySelector('.btn-primary');
-        if (btn) {
-            const original = btn.innerHTML;
-            btn.innerHTML = '<i data-lucide="check"></i> Tersimpan!';
-            btn.style.background = '#10b981';
-            setTimeout(() => {
-                btn.innerHTML = original;
-                btn.style.background = '';
-                lucide.createIcons();
-                window.location.reload();
-            }, 1000);
-        }
+        showToast('Profil toko berhasil diperbarui!');
+        setTimeout(() => {
+            window.location.reload();
+        }, 1500);
+    } else {
+        showToast('Gagal menyimpan profil.', 'error');
     }
 }
 
@@ -527,8 +600,8 @@ function renderItems() {
         row.innerHTML = `
             <td><input type="text" list="dl-items" value="${item.description}" placeholder="Nama barang / jasa" oninput="handleItemInput(${item.id}, this.value)"></td>
             <td><input type="number" value="${item.qty}" min="1" oninput="updateItem(${item.id}, 'qty', this.value)"></td>
-            <td><input type="number" value="${item.price}" oninput="updateItem(${item.id}, 'price', this.value)"></td>
-            <td style="font-weight: 600;">${formatRupiah(item.qty * item.price)}</td>
+            <td><input type="text" class="input-currency" value="${formatNumber(item.price)}" oninput="handleItemPriceInput(${item.id}, this)"></td>
+            <td style="font-weight: 600; text-align: right;">${formatRupiah(item.qty * item.price)}</td>
             <td><button class="btn-remove" onclick="removeItem(${item.id})"><i data-lucide="trash-2" style="width:18px"></i></button></td>
         `;
         body.appendChild(row);
@@ -623,14 +696,18 @@ async function saveInvoice() {
     const custName = document.getElementById('customerName').value;
 
     if (!noteNum || !custName) {
-        alert('Nomor Nota dan Nama Pelanggan harus diisi!');
+        showToast('Nomor Nota dan Nama Pelanggan harus diisi!', 'error');
         return;
     }
 
+    const discountEl = document.getElementById('inputDiscount');
+    const transportEl = document.getElementById('inputTransport');
+    const serviceEl = document.getElementById('inputService');
+
     const subtotal = items.reduce((a, b) => a + (b.qty * b.price), 0);
-    const discount = parseFloat(document.getElementById('inputDiscount').value) || 0;
-    const transport = parseFloat(document.getElementById('inputTransport').value) || 0;
-    const service = parseFloat(document.getElementById('inputService').value) || 0;
+    const discount = discountEl ? parseCurrency(discountEl.value) : 0;
+    const transport = transportEl ? parseCurrency(transportEl.value) : 0;
+    const service = serviceEl ? parseCurrency(serviceEl.value) : 0;
     const grandTotal = subtotal + service + transport - discount;
 
     const invoiceData = {
@@ -658,8 +735,8 @@ async function saveInvoice() {
         });
         const result = await res.json();
         if (result.success) {
-            alert(currentInvoiceIndex !== null ? 'Nota berhasil diperbarui!' : 'Nota berhasil disimpan ke riwayat!');
-            
+            showToast(currentInvoiceIndex !== null ? 'Nota berhasil diperbarui!' : 'Nota berhasil disimpan ke riwayat!');
+
             // Increment auto number if it's a NEW invoice
             if (currentInvoiceIndex === null && businessProfile.noteNextNumber) {
                 businessProfile.noteNextNumber++;
@@ -670,7 +747,7 @@ async function saveInvoice() {
             }
         }
     } catch (e) {
-        alert('Gagal menyimpan nota.');
+        showToast('Gagal menyimpan nota.', 'error');
     } finally {
         btn.innerHTML = originalContent;
         lucide.createIcons();
@@ -721,63 +798,200 @@ function formatTanggalIndo(dateStr) {
 }
 
 function updatePreview() {
-    if (!document.getElementById('viewBizName')) return;
+    const captureArea = document.getElementById('captureArea');
+    if (!captureArea) return;
 
-    // Header & Logo
-    const logoImg = document.getElementById('viewLogo');
-    if (businessProfile.logoPath) {
-        logoImg.src = businessProfile.logoPath + '?t=' + Date.now();
-        logoImg.style.display = 'block';
-    } else {
-        logoImg.style.display = 'none';
+    // Clear preview
+    captureArea.innerHTML = '';
+
+    const maxLines = 50;
+    let totalPages = Math.ceil(items.length / maxLines) || 1;
+
+    // Jika jumlah item pas kelipatan maxLines, paksa tambah halaman untuk footer
+    if (items.length > 0 && items.length % maxLines === 0) {
+        totalPages++;
     }
 
-    document.getElementById('viewBizName').innerText = businessProfile.bizName || 'NAMA TOKO';
-    document.getElementById('viewBizType').innerText = businessProfile.bizType || 'Jenis Usaha';
-    document.getElementById('viewBizSign').innerText = businessProfile.bizOwner || 'Pemilik';
-    document.getElementById('viewBizAddress').innerText = businessProfile.bizAddress || '-';
-    document.getElementById('viewBizPhone').innerText = 'Telp: ' + (businessProfile.bizPhone || '-');
+    // Global Summary Data
+    const discountEl = document.getElementById('inputDiscount');
+    const transportEl = document.getElementById('inputTransport');
+    const serviceEl = document.getElementById('inputService');
+    const noteFooterEl = document.getElementById('noteFooter');
 
-    // Customer & Nota Details
-    const custName = document.getElementById('customerName').value || '-';
-    let custInfoHtml = `<strong>Kepada: ${custName}</strong>`;
+    const subtotal = items.reduce((a, b) => a + (b.qty * b.price), 0);
+    const discount = discountEl ? parseCurrency(discountEl.value) : 0;
+    const transport = transportEl ? parseCurrency(transportEl.value) : 0;
+    const service = serviceEl ? parseCurrency(serviceEl.value) : 0;
+    const grandTotal = subtotal + service + transport - discount;
+    const terbilangText = grandTotal > 0 ? terbilang(grandTotal) + " Rupiah" : "-";
+    const specificFooter = (noteFooterEl && noteFooterEl.value) ? noteFooterEl.value : (businessProfile.noteFooterDefault || 'Terima kasih.');
+
+    let cumulativeSubtotal = 0;
+
+    for (let i = 0; i < totalPages; i++) {
+        const start = i * maxLines;
+        const end = start + maxLines;
+        const pageItems = items.slice(start, end);
+        const isLastPage = (i === totalPages - 1);
+        const isFirstPage = (i === 0);
+
+        // Calculate page-specific subtotal
+        const pageSubtotal = pageItems.reduce((a, b) => a + (b.qty * b.price), 0);
+        const carryOver = cumulativeSubtotal; // Saldo dari halaman sebelumnya
+        cumulativeSubtotal += pageSubtotal;
+
+        const pageHtml = generatePageHtml(pageItems, i + 1, totalPages, isLastPage, isFirstPage, {
+            subtotal, discount, transport, service, grandTotal, terbilangText, specificFooter,
+            pageSubtotal, carryOver, cumulativeSubtotal
+        });
+
+        captureArea.innerHTML += pageHtml;
+
+        if (!isLastPage) {
+            captureArea.innerHTML += '<div class="page-break"></div>';
+        }
+    }
+}
+
+function generatePageHtml(pageItems, pageNum, totalPages, isLastPage, isFirstPage, data) {
+    const logoHtml = businessProfile.logoPath
+        ? `<img src="${businessProfile.logoPath}?t=${Date.now()}" style="width: 50px; height: 50px; object-fit: contain;">`
+        : '';
+
+    const custNameEl = document.getElementById('customerName');
+    const noteNumEl = document.getElementById('noteNumber');
+    const noteDateEl = document.getElementById('noteDate');
+
+    const custName = custNameEl ? custNameEl.value : '-';
+    let custInfoHtml = `<strong>Kepada: ${custName || '-'}</strong>`;
     if (selectedCustomer) {
         custInfoHtml += `<br>Telp: ${selectedCustomer.hp || '-'}<br>Alamat: ${selectedCustomer.address || '-'}`;
-    } else if (custName !== '-') {
+    } else if (custName && custName !== '-') {
         custInfoHtml += `<br>Telp: -<br>Alamat: -`;
     }
-    document.getElementById('viewCustomer').innerHTML = custInfoHtml;
 
-    document.getElementById('viewNoteNumber').innerText = document.getElementById('noteNumber').value || '-';
-    document.getElementById('viewDate').innerText = formatTanggalIndo(document.getElementById('noteDate').value);
+    const noteNum = noteNumEl ? noteNumEl.value : '-';
+    const noteDate = (noteDateEl && noteDateEl.value) ? formatTanggalIndo(noteDateEl.value) : '-';
 
-    // Items
-    const viewBody = document.getElementById('viewItemsBody');
-    viewBody.innerHTML = '';
-    let subtotal = 0;
-    items.forEach(item => {
-        subtotal += (item.qty * item.price);
-        viewBody.innerHTML += `<tr><td>${item.description || '-'}</td><td style="text-align:center">${item.qty}</td><td style="text-align:right">${formatRupiah(item.price)}</td><td style="text-align:right">${formatRupiah(item.qty * item.price)}</td></tr>`;
+    // Items rows
+    let itemsHtml = '';
+
+    // Add carry over row if not first page
+    if (!isFirstPage) {
+        itemsHtml += `
+            <tr style="background: #f8fafc; font-style: italic; font-size: 0.8rem;">
+                <td colspan="3" style="font-weight: 600;">Pindahan dari halaman sebelumnya...</td>
+                <td style="text-align: right; font-weight: 600;">${formatRupiah(data.carryOver)}</td>
+            </tr>
+        `;
+    }
+
+    pageItems.forEach(item => {
+        itemsHtml += `
+            <tr>
+                <td>${item.description || '-'}</td>
+                <td style="text-align:center">${item.qty}</td>
+                <td style="text-align:right">${formatRupiah(item.price)}</td>
+                <td style="text-align:right">${formatRupiah(item.qty * item.price)}</td>
+            </tr>
+        `;
     });
 
-    const discount = parseFloat(document.getElementById('inputDiscount').value) || 0;
-    const transport = parseFloat(document.getElementById('inputTransport').value) || 0;
-    const service = parseFloat(document.getElementById('inputService').value) || 0;
-    const grandTotal = subtotal + service + transport - discount;
+    // Add subtotal for current page if not the only page OR not the last page
+    if (totalPages > 1 && !isLastPage) {
+        itemsHtml += `
+            <tr style="background: #f8fafc; font-style: italic; font-size: 0.8rem;">
+                <td colspan="3" style="font-weight: 600;">Subtotal Halaman ${pageNum}...</td>
+                <td style="text-align: right; font-weight: 600;">${formatRupiah(data.cumulativeSubtotal)}</td>
+            </tr>
+        `;
+    }
 
-    document.getElementById('viewSubtotal').innerText = formatRupiah(subtotal);
-    document.getElementById('viewService').innerText = formatRupiah(service);
-    document.getElementById('viewTransport').innerText = formatRupiah(transport);
-    document.getElementById('viewDiscount').innerText = '- ' + formatRupiah(discount);
-    document.getElementById('viewGrandTotal').innerText = formatRupiah(grandTotal);
+    let footerHtml = '';
+    if (isLastPage) {
+        footerHtml = `
+            <div style="display: flex; justify-content: space-between; margin-top: 1rem; align-items: flex-start; gap: 1.5rem;">
+                <div style="flex: 1;">
+                    <div style="font-style: italic; font-size: 0.65rem; color: #666; margin-bottom: 0.5rem; border: 1px solid #eee; padding: 6px; background: #fafafa; border-radius: 6px;">
+                        <span style="font-weight: 600; font-size: 0.7rem;">Terbilang:</span><br>
+                        <span style="text-transform: capitalize;">${data.terbilangText}</span>
+                    </div>
+                    <div id="viewFooter" style="font-size: 0.7rem; color: #555; font-style: italic;">
+                        ${data.specificFooter}
+                    </div>
+                </div>
+                <div class="total-section" style="margin-top: 0; width: 175px; flex-shrink: 0;">
+                    <div class="total-row" style="font-size: 0.75rem;"><span>Subtotal</span><span>${formatRupiah(data.subtotal)}</span></div>
+                    <div class="total-row" style="font-size: 0.75rem;"><span>Servis</span><span>${formatRupiah(data.service)}</span></div>
+                    <div class="total-row" style="font-size: 0.75rem;"><span>Transport</span><span>${formatRupiah(data.transport)}</span></div>
+                    <div class="total-row" style="font-size: 0.75rem;"><span>Diskon</span><span>- ${formatRupiah(data.discount)}</span></div>
+                    <div class="total-row grand-total" style="font-size: 0.85rem;"><span>TOTAL</span><span>${formatRupiah(data.grandTotal)}</span></div>
+                </div>
+            </div>
 
-    // Terbilang
-    const terbilangText = grandTotal > 0 ? terbilang(grandTotal) + " Rupiah" : "";
-    const terbilangEl = document.getElementById('viewTerbilang');
-    if (terbilangEl) terbilangEl.innerText = terbilangText;
+            <div style="margin-top: 1.5rem; display: flex; justify-content: space-between; font-size: 8.5pt;">
+                <div style="text-align: center; width: 40%;">
+                    <p style="margin-bottom: 3.5rem;">Pelanggan,</p>
+                    <p>( ........................ )</p>
+                </div>
+                <div style="text-align: center; width: 40%;">
+                    <p style="margin: 0;">Pangkalan Bun, ${noteDate}</p>
+                    <p style="margin-bottom: 3.5rem; margin-top: 5px;">Hormat Kami,</p>
+                    <p>( <span>${businessProfile.bizOwner || 'Pemilik'}</span> )</p>
+                </div>
+            </div>
+        `;
+    } else {
+        footerHtml = `
+            <div style="margin-top: 1rem; text-align: center; font-style: italic; color: #94a3b8; font-size: 8pt; border-top: 1px dashed #e2e8f0; padding-top: 0.5rem;">
+                Bersambung ke halaman ${pageNum + 1}...
+            </div>
+            <div style="flex: 1;"></div> <!-- Spacer untuk mendorong footer ke bawah -->
+            <div style="height: 50px;"></div> <!-- Spasi kosong tambahan (Page Break Visual) -->
+        `;
+    }
 
-    const specificFooter = document.getElementById('noteFooter').value;
-    document.getElementById('viewFooter').innerText = specificFooter || businessProfile.noteFooterDefault || 'Terima kasih.';
+    return `
+        <div class="note-page">
+            <div class="note-header" style="display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 1.5px solid #000; padding-bottom: 0.5rem; margin-bottom: 0.75rem;">
+                <div style="display: flex; gap: 0.75rem; align-items: center; flex: 1;">
+                    ${logoHtml}
+                    <div>
+                        <h2 style="margin:0; font-size: 11pt; text-transform: uppercase; color: #000; line-height: 1.2;">${businessProfile.bizName || 'NAMA TOKO'}</h2>
+                        <p style="margin: 0; font-size: 7.5pt; font-weight: 700; color: #333;">${businessProfile.bizType || 'Jenis Usaha'}</p>
+                        <p style="margin: 0; font-size: 7pt; color: #555; max-width: 250px; line-height: 1.2;">${businessProfile.bizAddress || '-'}</p>
+                        <p style="margin: 0; font-size: 7pt; font-weight: 700; color: #000;">Telp: ${businessProfile.bizPhone || '-'}</p>
+                    </div>
+                </div>
+                <div style="text-align: right; min-width: 150px; font-size: 8pt; line-height: 1.3;">
+                    <p style="margin: 0; font-weight: 800; border-bottom: 1px solid #ddd; padding-bottom: 2px; margin-bottom: 4px;">NOTA PEMBAYARAN</p>
+                    <p style="margin: 0;"><strong>No:</strong> <span style="font-weight: 700;">${noteNum}</span></p>
+                    <div style="margin-top: 2px; color: #000; font-size: 7.5pt;">${custInfoHtml}</div>
+                    <div style="font-size: 7pt; color: #64748b; margin-top: 4px;">Hal: ${pageNum} / ${totalPages}</div>
+                </div>
+            </div>
+
+            <div style="flex: 1; overflow: hidden;">
+                <table class="note-table" style="width: 100%;">
+                    <thead>
+                        <tr>
+                            <th>Deskripsi</th>
+                            <th style="text-align: center;">Qty</th>
+                            <th style="text-align: right;">Harga</th>
+                            <th style="text-align: right;">Total</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${itemsHtml}
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="note-footer-container">
+                ${footerHtml}
+            </div>
+        </div>
+    `;
 }
 
 async function loadInvoiceFromHistory(index) {
@@ -792,9 +1006,9 @@ async function loadInvoiceFromHistory(index) {
         document.getElementById('noteNumber').value = inv.number;
         document.getElementById('noteDate').value = inv.date;
         document.getElementById('customerName').value = inv.customer;
-        document.getElementById('inputDiscount').value = inv.discount || 0;
-        document.getElementById('inputTransport').value = inv.transport || 0;
-        document.getElementById('inputService').value = inv.service || 0;
+        document.getElementById('inputDiscount').value = formatNumber(inv.discount || 0);
+        document.getElementById('inputTransport').value = formatNumber(inv.transport || 0);
+        document.getElementById('inputService').value = formatNumber(inv.service || 0);
 
         // Update Items global
         items = inv.items;

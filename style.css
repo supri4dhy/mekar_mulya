@@ -87,8 +87,14 @@ textarea {
     border-radius: 12px;
     border: 1px solid var(--border);
     background: #fff;
-    transition: all 0.3s ease;
-    outline: none;
+    color: var(--text);
+    font-size: 0.95rem;
+    transition: all 0.3s;
+}
+
+input[type="number"],
+input.input-currency {
+    text-align: right;
 }
 
 input:focus {
@@ -128,9 +134,15 @@ input:focus {
     border-radius: 8px;
 }
 
+.items-table input[type="number"],
+.items-table input.input-currency {
+    text-align: right;
+}
+
 .item-row td:first-child {
     border-left: 1px solid var(--border);
     border-radius: 12px 0 0 12px;
+    text-align: left;
 }
 
 .item-row td:last-child {
@@ -175,7 +187,7 @@ input:focus {
 /* Preview Note (WYSIWYG A5) */
 .note-preview {
     background: white;
-    padding: 1rem !important;
+    padding: 2.5rem;
     border-radius: 4px;
     min-height: 600px;
     color: #000;
@@ -183,7 +195,19 @@ input:focus {
     position: sticky;
     top: 2rem;
     font-size: 8.5pt !important;
-    line-height: 1.3;
+}
+
+#viewFooter {
+    margin-top: 0.5rem;
+    padding: 0.5rem;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    font-style: italic;
+    font-size: 7pt;
+    color: #475569;
+    line-height: 1.4;
+    text-align: left;
 }
 
 .note-header {
@@ -575,7 +599,7 @@ input:focus {
         flex-direction: column;
         justify-content: flex-end;
     }
-    
+
     .item-row td:last-child {
         align-items: flex-end;
     }
@@ -588,11 +612,25 @@ input:focus {
         margin-bottom: 0.2rem;
     }
 
-    .item-row td:first-child::before { content: "Barang / Jasa:"; }
-    .item-row td:nth-child(2)::before { content: "Qty:"; }
-    .item-row td:nth-child(3)::before { content: "Harga:"; }
-    .item-row td:nth-child(4)::before { content: "Subtotal:"; }
-    .item-row td:last-child::before { content: "Aksi:"; }
+    .item-row td:first-child::before {
+        content: "Barang / Jasa:";
+    }
+
+    .item-row td:nth-child(2)::before {
+        content: "Qty:";
+    }
+
+    .item-row td:nth-child(3)::before {
+        content: "Harga:";
+    }
+
+    .item-row td:nth-child(4)::before {
+        content: "Subtotal:";
+    }
+
+    .item-row td:last-child::before {
+        content: "Aksi:";
+    }
 
     /* Preview Mobile */
     .preview-section {
@@ -661,17 +699,26 @@ input:focus {
     }
 
     .note-preview {
-        box-shadow: none !important;
-        border: none !important;
-        width: 100% !important;
-        max-width: 132mm;
-        /* 148mm - (margin 8mm * 2) */
-        padding: 0 !important;
-        margin: 0 auto !important;
-        color: black !important;
-        font-family: 'Inter', sans-serif;
-        font-size: 8.5pt !important;
-        /* Font lebih kecil untuk A5 */
+        background: #525659 !important;
+        /* Warna background dark grey seperti viewer PDF/Word */
+        padding: 20px !important;
+        border-radius: 8px;
+    }
+
+    .note-page {
+        background: white;
+        height: 210mm;
+        /* Fixed A5 Height */
+        padding: 5mm 5mm 5mm 5mm;
+        /* Bawah diperbesar (15mm) */
+        margin: 0 auto 30px auto !important;
+        /* Jarak antar halaman */
+        box-sizing: border-box;
+        display: flex;
+        flex-direction: column;
+        position: relative;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+        /* Bayangan lebih dalam */
     }
 
     .note-header {
@@ -710,7 +757,15 @@ input:focus {
     .note-table td {
         padding: 3pt 4pt !important;
         font-size: 8pt !important;
-        border-bottom: 0.5px solid #ccc !important;
+        border-bottom: 0.5px solid #eee !important;
+        /* Garis lebih tipis */
+    }
+
+    .empty-row td {
+        border-bottom: 0.5px solid #f9f9f9 !important;
+        /* Sangat samar */
+        height: 18pt;
+        /* Konsistensi tinggi baris */
     }
 
     .total-section {
@@ -738,6 +793,12 @@ input:focus {
         margin-top: 15mm !important;
         /* Jarak tanda tangan lebih rapat */
     }
+
+    .page-break {
+        display: block;
+        page-break-after: always;
+        break-after: page;
+    }
 }
 
 
@@ -749,5 +810,107 @@ input:focus {
 
     .note-preview {
         position: static;
+    }
+}
+
+/* Toast Notification System */
+.toast-container {
+    position: fixed;
+    top: 1rem;
+    right: 1rem;
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    pointer-events: none;
+}
+
+.toast-item {
+    pointer-events: auto;
+    min-width: 280px;
+    max-width: 400px;
+    background: white;
+    padding: 1rem 1.25rem;
+    border-radius: 16px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    color: var(--text);
+    font-weight: 500;
+    font-size: 0.9rem;
+    animation: toastSlideIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+    border-left: 4px solid var(--primary);
+}
+
+.toast-item.success {
+    border-left-color: #10b981;
+}
+
+.toast-item.error {
+    border-left-color: #ef4444;
+}
+
+.toast-item.info {
+    border-left-color: var(--primary);
+}
+
+.toast-item i {
+    width: 20px;
+    height: 20px;
+}
+
+.toast-item.success i {
+    color: #10b981;
+}
+
+.toast-item.error i {
+    color: #ef4444;
+}
+
+.toast-item.info i {
+    color: var(--primary);
+}
+
+@keyframes toastSlideIn {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+@keyframes toastSlideOut {
+    from {
+        transform: translateX(0);
+        opacity: 1;
+    }
+
+    to {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+}
+
+.toast-item.fade-out {
+    animation: toastSlideOut 0.4s ease forwards;
+}
+
+@media (max-width: 768px) {
+    .toast-container {
+        top: auto;
+        bottom: 100px;
+        /* Di atas navbar mobile */
+        left: 1rem;
+        right: 1rem;
+    }
+
+    .toast-item {
+        max-width: none;
+        width: 100%;
     }
 }

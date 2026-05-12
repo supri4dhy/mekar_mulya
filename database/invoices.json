@@ -239,58 +239,107 @@
                 "price": 5800000
             },
             {
-                "id": 1778572649335,
+                "id": 1778576757168,
+                "description": "1",
+                "qty": 1,
+                "price": 0
+            },
+            {
+                "id": 1778576758042,
+                "description": "2",
+                "qty": 1,
+                "price": 0
+            },
+            {
+                "id": 1778576758874,
+                "description": "3",
+                "qty": 1,
+                "price": 0
+            },
+            {
+                "id": 1778576760444,
+                "description": "4",
+                "qty": 1,
+                "price": 0
+            },
+            {
+                "id": 1778576768232,
+                "description": "5",
+                "qty": 1,
+                "price": 0
+            },
+            {
+                "id": 1778576770065,
+                "description": "6",
+                "qty": 1,
+                "price": 0
+            },
+            {
+                "id": 1778576772984,
+                "description": "7",
+                "qty": 1,
+                "price": 0
+            },
+            {
+                "id": 1778576774860,
+                "description": "9",
+                "qty": 1,
+                "price": 0
+            },
+            {
+                "id": 1778576777146,
                 "description": "",
                 "qty": 1,
                 "price": 0
             },
             {
-                "id": 1778572650941,
+                "id": 1778576781672,
                 "description": "",
                 "qty": 1,
                 "price": 0
             },
             {
-                "id": 1778572651980,
+                "id": 1778576782438,
                 "description": "",
                 "qty": 1,
                 "price": 0
             },
             {
-                "id": 1778572653515,
+                "id": 1778578788434,
                 "description": "",
                 "qty": 1,
                 "price": 0
             },
             {
-                "id": 1778572654611,
+                "id": 1778579128429,
                 "description": "",
                 "qty": 1,
                 "price": 0
             },
             {
-                "id": 1778572656879,
+                "id": 1778579131138,
                 "description": "",
                 "qty": 1,
                 "price": 0
             },
             {
-                "id": 1778572661086,
+                "id": 1778579157093,
                 "description": "",
                 "qty": 1,
                 "price": 0
             },
             {
-                "id": 1778572662145,
+                "id": 1778579158205,
                 "description": "",
                 "qty": 1,
                 "price": 0
             }
         ],
         "subtotal": 12400000,
-        "discount": 0,
+        "discount": 25000,
+        "transport": 500000,
         "service": 0,
-        "total": 12400000,
-        "timestamp": "2026-05-12 07:57:49"
+        "total": 12875000,
+        "timestamp": "2026-05-12 09:45:59"
     }
 ]
