@@ -184,14 +184,18 @@ if (isLoggedIn()) {
                     <i data-lucide="log-in"></i> Masuk Sekarang
                 </button>
             </form>
-            
-            <div style="margin-top: 2.5rem; padding: 1.2rem; background: #f8fafc; border-radius: 16px; border: 1px solid var(--border); display: flex; align-items: center; gap: 1rem;">
-                <div style="background: var(--primary); padding: 8px; border-radius: 8px; color: white;">
-                    <i data-lucide="info" style="width:16px; height:16px;"></i>
+
+            <!-- Info Mode Demo -->
+            <div style="margin-top: 2rem; padding: 1.2rem; background: #f0fdf4; border-radius: 16px; border: 1px solid #bbf7d0; display: flex; align-items: center; gap: 1rem;">
+                <div style="background: #22c55e; padding: 10px; border-radius: 10px; color: white; display: flex; align-items: center; justify-content: center;">
+                    <i data-lucide="play-circle" style="width:20px; height:20px;"></i>
                 </div>
-                <p style="font-size: 0.8rem; color: var(--text-muted); margin: 0; line-height: 1.4;">
-                    Username & Password Default: <br><span style="color: var(--primary); font-weight: 700;">admin</span>
-                </p>
+                <div style="flex: 1;">
+                    <p style="font-size: 0.8rem; color: #166534; margin: 0; font-weight: 600;">Coba Mode Demo</p>
+                    <p style="font-size: 0.75rem; color: #15803d; margin: 2px 0 0; opacity: 0.8;">
+                        Gunakan: <strong style="color: #166534;">demo</strong> / <strong style="color: #166534;">demo123</strong>
+                    </p>
+                </div>
             </div>
         </div>
     </div>

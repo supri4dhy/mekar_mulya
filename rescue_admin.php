@@ -12,18 +12,24 @@ try {
     $user = $stmt->fetch();
 
     if ($user) {
-        // Update password jika sudah ada
-        $stmt = $pdo->prepare("UPDATE users SET password = ? WHERE username = ?");
+        $stmt = $pdo->prepare("UPDATE users SET password = ?, role = 'admin' WHERE username = ?");
         $stmt->execute([$hashedPassword, $username]);
-        echo "✅ User 'admin' sudah diperbarui dengan password 'admin123'.<br>";
+        echo "✅ User 'admin' diperbarui (Pass: admin123).<br>";
     } else {
-        // Insert jika belum ada
-        $stmt = $pdo->prepare("INSERT INTO users (username, password) VALUES (?, ?)");
-        $stmt->execute([$username, $hashedPassword]);
-        echo "✅ User 'admin' berhasil didaftarkan dengan password 'admin123'.<br>";
+        $stmt = $pdo->prepare("INSERT INTO users (username, password, role) VALUES (?, ?, 'admin')");
+        $stmt->execute([$username, $hashedPassword, 'admin']);
+        echo "✅ User 'admin' terdaftar (Pass: admin123).<br>";
     }
+
+    // Daftarkan User Demo
+    $demoUser = 'demo';
+    $demoPass = 'demo123';
+    $demoHash = password_hash($demoPass, PASSWORD_DEFAULT);
+    $stmt = $pdo->prepare("INSERT INTO users (username, password, role) VALUES (?, ?, 'user') ON DUPLICATE KEY UPDATE password = ?, role = 'user'");
+    $stmt->execute([$demoUser, $demoHash, $demoHash]);
+    echo "✅ User 'demo' siap (Pass: demo123).<br>";
     
-    echo "Silakan coba login kembali di halaman utama.";
+    echo "<br>Silakan coba login kembali.";
 } catch (Exception $e) {
     echo "❌ Error: " . $e->getMessage();
 }

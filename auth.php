@@ -36,6 +36,20 @@ function checkAuth() {
     }
 }
 
+function checkRole($allowedRole) {
+    checkAuth();
+    if ($_SESSION['role'] !== $allowedRole) {
+        // Jika admin mencoba akses nota, arahkan ke admin panel
+        if ($_SESSION['role'] === 'admin') {
+            header('Location: admin_panel.php');
+        } else {
+            // Jika user biasa mencoba akses admin panel, arahkan ke nota
+            header('Location: nota.php');
+        }
+        exit();
+    }
+}
+
 function logout() {
     session_destroy();
     header('Location: index.php');
