@@ -74,15 +74,13 @@ function renderInvoices(data) {
 
     let cumulativeTotal = 0;
     
-    // Urutkan terbaru di atas (berdasarkan urutan asli di array, kita reverse salinannya)
-    const displayData = [...data].reverse();
+    data.forEach((inv) => {
+        // Ambil nilai total, pastikan bukan NaN
+        const val = parseFloat(inv.total) || parseFloat(inv.grand_total) || 0;
+        cumulativeTotal += val;
 
-    displayData.forEach((inv, index) => {
-        cumulativeTotal += parseFloat(inv.total || 0);
-
-        // Karena kita memfilter, kita harus mencari index asli nota tersebut dalam array allInvoices
-        // agar tombol edit/hapus tetap mengarah ke index yang benar di server.
-        const originalIndex = allInvoices.findIndex(item => item.timestamp === inv.timestamp && item.number === inv.number);
+        // Cari index asli nota dalam allInvoices agar viewInvoice mengarah ke index yang benar
+        const originalIndex = allInvoices.findIndex(item => item.id === inv.id);
 
         const tr = document.createElement('tr');
         tr.innerHTML = `
@@ -94,7 +92,7 @@ function renderInvoices(data) {
                 <button class="btn-edit" onclick="viewInvoice(${originalIndex})" title="Buka Nota">
                     <i data-lucide="external-link" style="width:16px"></i>
                 </button>
-                <button class="btn-remove" onclick="deleteInvoice(${originalIndex})" title="Hapus">
+                <button class="btn-remove" onclick="deleteInvoice(${inv.id})" title="Hapus">
                     <i data-lucide="trash-2" style="width:16px"></i>
                 </button>
             </td>
@@ -111,7 +109,7 @@ function filterInvoices() {
     const dateFilter = document.getElementById('filterDate').value;
 
     const filtered = allInvoices.filter(inv => {
-        const matchName = inv.customer.toLowerCase().includes(query);
+        const matchName = (inv.customer || "").toLowerCase().includes(query);
         const matchDate = dateFilter ? inv.date === dateFilter : true;
         return matchName && matchDate;
     });
@@ -125,10 +123,15 @@ function resetFilter() {
     renderInvoices(allInvoices);
 }
 
-async function deleteInvoice(index) {
+async function deleteInvoice(id) {
     if (confirm('Yakin ingin menghapus riwayat nota ini?')) {
-        await fetch('api.php?action=deleteInvoice&index=' + index);
-        loadInvoices();
+        const res = await fetch('api.php?action=deleteInvoice&id=' + id);
+        const result = await res.json();
+        if (result.success) {
+            loadInvoices();
+        } else {
+            alert('Gagal menghapus: ' + result.error);
+        }
     }
 }
 

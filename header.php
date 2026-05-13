@@ -10,29 +10,42 @@ $currentPage = basename($_SERVER['PHP_SELF']);
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SmartNote - Aplikasi Nota Dinamis</title>
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="style.css?v=3.5">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <script>window.$currentPage = '<?= $currentPage ?>';</script>
 </head>
 <body>
+    <div class="mobile-sticky-header" style="display: none;">
+        <i data-lucide="file-spreadsheet" style="width: 20px; height: 20px; color: var(--primary); margin-right: 8px;"></i>
+        <h1>Smart<span style="color: var(--accent);">Note</span></h1>
+    </div>
 
     <header class="header-main" style="text-align: center; margin-bottom: 1rem;">
         <h1 style="font-size: 2rem; letter-spacing: -1px;">Smart<span style="color: var(--accent);">Note</span></h1>
         
         <nav class="nav-tabs">
-            <a href="nota.php" class="tab-btn <?= $currentPage == 'nota.php' ? 'active' : '' ?>" style="text-decoration: none;">
-                <i data-lucide="file-text"></i> Nota
-            </a>
-            <a href="master.php" class="tab-btn <?= $currentPage == 'master.php' ? 'active' : '' ?>" style="text-decoration: none;">
-                <i data-lucide="database"></i> Data
-            </a>
-            <a href="history.php" class="tab-btn <?= $currentPage == 'history.php' ? 'active' : '' ?>" style="text-decoration: none;">
-                <i data-lucide="history"></i> Riwayat
-            </a>
-            <a href="settings.php" class="tab-btn <?= $currentPage == 'settings.php' ? 'active' : '' ?>" style="text-decoration: none;">
-                <i data-lucide="settings"></i> Pengaturan
-            </a>
+            <?php if ($_SESSION['role'] === 'admin'): ?>
+                <!-- Menu Khusus ADMIN -->
+                <a href="admin_panel.php" class="tab-btn <?= $currentPage == 'admin_panel.php' ? 'active' : '' ?>" style="text-decoration: none;">
+                    <i data-lucide="shield-check"></i> Admin Panel
+                </a>
+            <?php else: ?>
+                <!-- Menu Khusus USER -->
+                <a href="nota.php" class="tab-btn <?= $currentPage == 'nota.php' ? 'active' : '' ?>" style="text-decoration: none;">
+                    <i data-lucide="file-text"></i> Nota
+                </a>
+                <a href="master.php" class="tab-btn <?= $currentPage == 'master.php' ? 'active' : '' ?>" style="text-decoration: none;">
+                    <i data-lucide="database"></i> Data
+                </a>
+                <a href="history.php" class="tab-btn <?= $currentPage == 'history.php' ? 'active' : '' ?>" style="text-decoration: none;">
+                    <i data-lucide="history"></i> Riwayat
+                </a>
+                <a href="settings.php" class="tab-btn <?= $currentPage == 'settings.php' ? 'active' : '' ?>" style="text-decoration: none;">
+                    <i data-lucide="settings"></i> Pengaturan
+                </a>
+            <?php endif; ?>
+
             <a href="logout.php" class="tab-btn" style="text-decoration: none; color: #ef4444;">
                 <i data-lucide="log-out"></i> Keluar
             </a>

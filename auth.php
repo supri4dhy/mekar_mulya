@@ -1,15 +1,26 @@
 <?php
 session_start();
 
+require_once __DIR__ . '/database/db.php';
+
 function login($username, $password) {
-    $users = json_decode(file_get_contents(__DIR__ . '/database/users.json'), true);
-    foreach ($users as $user) {
-        if ($user['username'] === $username && $user['password'] === $password) {
-            $_SESSION['user_id'] = $user['id'];
-            $_SESSION['username'] = $user['username'];
-            $_SESSION['name'] = $user['name'];
-            return true;
+    global $pdo;
+    try {
+        $stmt = $pdo->prepare("SELECT * FROM users WHERE username = ?");
+        $stmt->execute([$username]);
+        $user = $stmt->fetch();
+        
+        if ($user) {
+            // Mendukung password_verify atau plain text untuk kemudahan demo awal
+            if (password_verify($password, $user['password']) || $password === $user['password']) {
+                $_SESSION['user_id'] = $user['id'];
+                $_SESSION['username'] = $user['username'];
+                $_SESSION['role'] = $user['role']; // Simpan role di session
+                return true;
+            }
         }
+    } catch (Exception $e) {
+        return false;
     }
     return false;
 }

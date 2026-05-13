@@ -44,10 +44,19 @@ function showToast(message, type = 'success') {
     }, 3000);
 }
 
-function parseCurrency(value) {
-    if (typeof value !== 'string') return value;
-    return parseFloat(value.replace(/\./g, '')) || 0;
+function parseCurrency(str) {
+    if (str === null || str === undefined) return 0;
+    if (typeof str === 'number') return str;
+    
+    // Hilangkan semua karakter kecuali angka dan koma (format Indonesia)
+    let clean = str.toString().replace(/[^\d,]/g, '');
+    
+    // Ganti koma dengan titik agar bisa dihitung secara matematis oleh JavaScript
+    clean = clean.replace(',', '.');
+    
+    return parseFloat(clean) || 0;
 }
+
 
 function formatNumber(value) {
     return value.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
@@ -183,13 +192,16 @@ async function loadAllData() {
 
         // Check if loading from history
         const loadIdx = localStorage.getItem('loadInvoiceIndex');
-        if (loadIdx !== null && $currentPage === 'nota.php') {
+        if (loadIdx !== null && window.$currentPage === 'nota.php') {
             loadInvoiceFromHistory(parseInt(loadIdx));
             localStorage.removeItem('loadInvoiceIndex');
         } else {
             renderItems();
             updatePreview();
         }
+
+        // Cek setup profil toko
+        checkSetup();
     } catch (e) {
         console.error("Gagal memuat data:", e);
     }
@@ -594,14 +606,16 @@ function renderItems() {
     const body = document.getElementById('itemsBody');
     if (!body) return;
     body.innerHTML = '';
-    items.forEach(item => {
+    items.forEach((item, index) => {
         const row = document.createElement('tr');
         row.className = 'item-row';
+        row.setAttribute('data-id', item.id); // Beri tanda ID unik pada baris
         row.innerHTML = `
+            <td style="text-align: center; font-weight: 600; color: var(--text-muted);">${index + 1}</td>
             <td><input type="text" list="dl-items" value="${item.description}" placeholder="Nama barang / jasa" oninput="handleItemInput(${item.id}, this.value)"></td>
             <td><input type="number" value="${item.qty}" min="1" oninput="updateItem(${item.id}, 'qty', this.value)"></td>
             <td><input type="text" class="input-currency" value="${formatNumber(item.price)}" oninput="handleItemPriceInput(${item.id}, this)"></td>
-            <td style="font-weight: 600; text-align: right;">${formatRupiah(item.qty * item.price)}</td>
+            <td class="row-total" style="font-weight: 600; text-align: right;">${formatRupiah(item.qty * item.price)}</td>
             <td><button class="btn-remove" onclick="removeItem(${item.id})"><i data-lucide="trash-2" style="width:18px"></i></button></td>
         `;
         body.appendChild(row);
@@ -610,13 +624,25 @@ function renderItems() {
 }
 
 function handleItemInput(id, value) {
-    const match = [...masterData.products, ...masterData.services].find(m => m.name === value);
+    const allMaster = [...(masterData.products || []), ...(masterData.services || [])];
+    const match = allMaster.find(m => m.name === value);
+
+    const index = items.findIndex(item => item.id === id);
+    if (index === -1) return;
+
     if (match) {
-        updateItem(id, 'description', match.name, false);
-        updateItem(id, 'price', match.price, true);
+        // Jika cocok dengan list (Autocomplete dipilih)
+        items[index].description = match.name;
+        items[index].price = match.price;
+        
+        // Render ulang agar harga otomatis terisi di kotak input harga
+        renderItems(); 
     } else {
-        updateItem(id, 'description', value, false);
+        // Jika mengetik manual (tidak ada di list)
+        items[index].description = value;
     }
+    
+    updatePreview();
 }
 
 // Auto-fill Customer Info
@@ -647,44 +673,14 @@ function resetForm() {
     }
 }
 
-async function downloadPDF() {
-    const element = document.getElementById('captureArea');
-    if (!element) return;
+// Fungsi downloadPDF telah dipindahkan ke nota_print.js untuk menjaga kebersihan kode.
 
-    const noteNum = document.getElementById('noteNumber').value || 'NOTA';
-    const custName = document.getElementById('customerName').value || 'Pelanggan';
-    const fileName = `Nota_${noteNum}_${custName}.pdf`;
 
-    const btn = document.getElementById('btnDownload');
-    const originalContent = btn.innerHTML;
-    btn.innerHTML = '<i data-lucide="loader-2" class="spin"></i> Memproses...';
-    lucide.createIcons();
 
-    // Opsi yang lebih stabil
-    const opt = {
-        margin: 3,
-        filename: fileName,
-        image: { type: 'jpeg', quality: 1 },
-        html2canvas: {
-            scale: 2,
-            useCORS: true,
-            scrollY: 0,
-            windowHeight: element.scrollHeight
-        },
-        jsPDF: { unit: 'mm', format: 'a5', orientation: 'portrait' }
-    };
 
-    try {
-        // Langsung proses tanpa memindahkan elemen
-        await html2pdf().set(opt).from(element).save();
-    } catch (error) {
-        console.error('Gagal membuat PDF:', error);
-        alert('Gagal membuat PDF. Silakan coba lagi.');
-    } finally {
-        btn.innerHTML = originalContent;
-        lucide.createIcons();
-    }
-}
+
+
+
 
 
 
@@ -759,15 +755,25 @@ async function saveInvoice() {
 
 function updateItem(id, field, value, shouldReRender = false) {
     const index = items.findIndex(item => item.id === id);
-    if (index !== -1) {
-        items[index][field] = (field === 'qty' || field === 'price') ? (parseFloat(value) || 0) : value;
-        if (shouldReRender) renderItems();
-        else {
-            const row = document.querySelector(`.item-row:nth-child(${index + 1})`);
-            if (row) row.cells[3].innerText = formatRupiah(items[index].qty * items[index].price);
+    if (index === -1) return;
+
+    // Pastikan angka ter-parse dengan benar
+    items[index][field] = (field === 'qty' || field === 'price') ? parseCurrency(value) : value;
+
+    if (shouldReRender) {
+        renderItems();
+    } else {
+        // Update Total di baris tersebut secara real-time
+        const row = document.querySelector(`.item-row[data-id="${id}"]`);
+        if (row) {
+            const totalCell = row.querySelector('.row-total');
+            if (totalCell) {
+                const total = items[index].qty * items[index].price;
+                totalCell.innerText = formatRupiah(total);
+            }
         }
-        updatePreview();
     }
+    updatePreview();
 }
 
 function addItem() {
@@ -804,12 +810,11 @@ function updatePreview() {
     // Clear preview
     captureArea.innerHTML = '';
 
-    const maxLines = 50;
-    let totalPages = Math.ceil(items.length / maxLines) || 1;
-
-    // Jika jumlah item pas kelipatan maxLines, paksa tambah halaman untuk footer
-    if (items.length > 0 && items.length % maxLines === 0) {
-        totalPages++;
+    const maxLinesFirst = 15;
+    const maxLinesNext = 15;
+    let totalPages = 1;
+    if (items.length > maxLinesFirst) {
+        totalPages = 1 + Math.ceil((items.length - maxLinesFirst) / maxLinesNext);
     }
 
     // Global Summary Data
@@ -827,13 +832,16 @@ function updatePreview() {
     const specificFooter = (noteFooterEl && noteFooterEl.value) ? noteFooterEl.value : (businessProfile.noteFooterDefault || 'Terima kasih.');
 
     let cumulativeSubtotal = 0;
+    let currentItemIndex = 0;
 
     for (let i = 0; i < totalPages; i++) {
-        const start = i * maxLines;
-        const end = start + maxLines;
-        const pageItems = items.slice(start, end);
-        const isLastPage = (i === totalPages - 1);
         const isFirstPage = (i === 0);
+        const isLastPage = (i === totalPages - 1);
+        const limit = isFirstPage ? maxLinesFirst : maxLinesNext;
+
+        const pageItems = items.slice(currentItemIndex, currentItemIndex + limit);
+        const startNumber = currentItemIndex + 1;
+        currentItemIndex += pageItems.length;
 
         // Calculate page-specific subtotal
         const pageSubtotal = pageItems.reduce((a, b) => a + (b.qty * b.price), 0);
@@ -842,7 +850,7 @@ function updatePreview() {
 
         const pageHtml = generatePageHtml(pageItems, i + 1, totalPages, isLastPage, isFirstPage, {
             subtotal, discount, transport, service, grandTotal, terbilangText, specificFooter,
-            pageSubtotal, carryOver, cumulativeSubtotal
+            pageSubtotal, carryOver, cumulativeSubtotal, startNumber, limit
         });
 
         captureArea.innerHTML += pageHtml;
@@ -865,7 +873,8 @@ function generatePageHtml(pageItems, pageNum, totalPages, isLastPage, isFirstPag
     const custName = custNameEl ? custNameEl.value : '-';
     let custInfoHtml = `<strong>Kepada: ${custName || '-'}</strong>`;
     if (selectedCustomer) {
-        custInfoHtml += `<br>Telp: ${selectedCustomer.hp || '-'}<br>Alamat: ${selectedCustomer.address || '-'}`;
+        const addrFormatted = (selectedCustomer.address || '-').replace(/\n/g, '<br>');
+        custInfoHtml += `<br>Telp: ${selectedCustomer.hp || '-'}<br>Alamat: ${addrFormatted}`;
     } else if (custName && custName !== '-') {
         custInfoHtml += `<br>Telp: -<br>Alamat: -`;
     }
@@ -880,15 +889,17 @@ function generatePageHtml(pageItems, pageNum, totalPages, isLastPage, isFirstPag
     if (!isFirstPage) {
         itemsHtml += `
             <tr style="background: #f8fafc; font-style: italic; font-size: 0.8rem;">
-                <td colspan="3" style="font-weight: 600;">Pindahan dari halaman sebelumnya...</td>
+                <td colspan="4" style="font-weight: 600;">Pindahan dari halaman sebelumnya...</td>
                 <td style="text-align: right; font-weight: 600;">${formatRupiah(data.carryOver)}</td>
             </tr>
         `;
     }
 
-    pageItems.forEach(item => {
+    pageItems.forEach((item, idx) => {
+        const itemNumber = data.startNumber + idx;
         itemsHtml += `
             <tr>
+                <td style="text-align:center">${itemNumber}</td>
                 <td>${item.description || '-'}</td>
                 <td style="text-align:center">${item.qty}</td>
                 <td style="text-align:right">${formatRupiah(item.price)}</td>
@@ -901,16 +912,20 @@ function generatePageHtml(pageItems, pageNum, totalPages, isLastPage, isFirstPag
     if (totalPages > 1 && !isLastPage) {
         itemsHtml += `
             <tr style="background: #f8fafc; font-style: italic; font-size: 0.8rem;">
-                <td colspan="3" style="font-weight: 600;">Subtotal Halaman ${pageNum}...</td>
+                <td colspan="4" style="font-weight: 600;">Subtotal Halaman ${pageNum}...</td>
                 <td style="text-align: right; font-weight: 600;">${formatRupiah(data.cumulativeSubtotal)}</td>
             </tr>
         `;
     }
 
+
+
+
+
     let footerHtml = '';
     if (isLastPage) {
         footerHtml = `
-            <div style="display: flex; justify-content: space-between; margin-top: 1rem; align-items: flex-start; gap: 1.5rem;">
+            <div style="display: flex; justify-content: space-between; margin-top: 0.5rem; align-items: flex-start; gap: 1.5rem;">
                 <div style="flex: 1;">
                     <div style="font-style: italic; font-size: 0.65rem; color: #666; margin-bottom: 0.5rem; border: 1px solid #eee; padding: 6px; background: #fafafa; border-radius: 6px;">
                         <span style="font-weight: 600; font-size: 0.7rem;">Terbilang:</span><br>
@@ -929,25 +944,28 @@ function generatePageHtml(pageItems, pageNum, totalPages, isLastPage, isFirstPag
                 </div>
             </div>
 
-            <div style="margin-top: 1.5rem; display: flex; justify-content: space-between; font-size: 8.5pt;">
+            <div style="display: flex; justify-content: space-between; font-size: 8.5pt; margin-top: 0.8rem;">
                 <div style="text-align: center; width: 40%;">
-                    <p style="margin-bottom: 3.5rem;">Pelanggan,</p>
+                    <div style="margin-bottom: 2px; visibility: hidden;">&nbsp;</div>
+                    <p style="margin-bottom: 3rem; margin-top: 0;">Pelanggan,</p>
                     <p>( ........................ )</p>
                 </div>
                 <div style="text-align: center; width: 40%;">
-                    <p style="margin: 0;">Pangkalan Bun, ${noteDate}</p>
-                    <p style="margin-bottom: 3.5rem; margin-top: 5px;">Hormat Kami,</p>
+                    <div style="margin-bottom: 2px;">
+                        ${businessProfile.bizCity || 'Pangkalan Bun'}, ${noteDate}
+                    </div>
+                    <p style="margin-bottom: 3rem; margin-top: 0;">Hormat Kami,</p>
                     <p>( <span>${businessProfile.bizOwner || 'Pemilik'}</span> )</p>
                 </div>
             </div>
         `;
     } else {
         footerHtml = `
-            <div style="margin-top: 1rem; text-align: center; font-style: italic; color: #94a3b8; font-size: 8pt; border-top: 1px dashed #e2e8f0; padding-top: 0.5rem;">
+            <div style="margin-top: 1rem; text-align: center; font-style: italic; color: #94a3b8; font-size: 8pt; border-top: 1px dashed #e2e8f0; padding-top: 0.5rem; margin-bottom: 10px;">
                 Bersambung ke halaman ${pageNum + 1}...
             </div>
-            <div style="flex: 1;"></div> <!-- Spacer untuk mendorong footer ke bawah -->
-            <div style="height: 50px;"></div> <!-- Spasi kosong tambahan (Page Break Visual) -->
+            <div style="height: 30px;"></div> 
+            <div style="flex: 1;"></div> 
         `;
     }
 
@@ -959,7 +977,7 @@ function generatePageHtml(pageItems, pageNum, totalPages, isLastPage, isFirstPag
                     <div>
                         <h2 style="margin:0; font-size: 11pt; text-transform: uppercase; color: #000; line-height: 1.2;">${businessProfile.bizName || 'NAMA TOKO'}</h2>
                         <p style="margin: 0; font-size: 7.5pt; font-weight: 700; color: #333;">${businessProfile.bizType || 'Jenis Usaha'}</p>
-                        <p style="margin: 0; font-size: 7pt; color: #555; max-width: 250px; line-height: 1.2;">${businessProfile.bizAddress || '-'}</p>
+                        <p style="margin: 0; font-size: 7pt; color: #555; max-width: 250px; line-height: 1.2;">${(businessProfile.bizAddress || '-').replace(/\n/g, '<br>')}</p>
                         <p style="margin: 0; font-size: 7pt; font-weight: 700; color: #000;">Telp: ${businessProfile.bizPhone || '-'}</p>
                     </div>
                 </div>
@@ -971,16 +989,18 @@ function generatePageHtml(pageItems, pageNum, totalPages, isLastPage, isFirstPag
                 </div>
             </div>
 
-            <div style="flex: 1; overflow: hidden;">
+            <div style="flex: 1; overflow: visible;">
                 <table class="note-table" style="width: 100%;">
                     <thead>
                         <tr>
+                            <th style="width: 30px; text-align: center;">No</th>
                             <th>Deskripsi</th>
                             <th style="text-align: center;">Qty</th>
                             <th style="text-align: right;">Harga</th>
                             <th style="text-align: right;">Total</th>
                         </tr>
                     </thead>
+
                     <tbody>
                         ${itemsHtml}
                     </tbody>
@@ -988,11 +1008,13 @@ function generatePageHtml(pageItems, pageNum, totalPages, isLastPage, isFirstPag
             </div>
 
             <div class="note-footer-container">
+
                 ${footerHtml}
             </div>
         </div>
     `;
 }
+
 
 async function loadInvoiceFromHistory(index) {
     try {
@@ -1010,10 +1032,13 @@ async function loadInvoiceFromHistory(index) {
         document.getElementById('inputTransport').value = formatNumber(inv.transport || 0);
         document.getElementById('inputService').value = formatNumber(inv.service || 0);
 
-        // Update Items global
-        items = inv.items;
+        // Update Items global dengan memberikan ID unik sementara agar bisa dihapus/edit
+        items = inv.items.map((item, idx) => ({
+            ...item,
+            id: Date.now() + idx // Berikan ID unik sementara
+        }));
 
-        // Re-render
+        // Re-render tampilan rincian
         renderItems();
         updatePreview();
 
@@ -1024,3 +1049,49 @@ async function loadInvoiceFromHistory(index) {
     }
 }
 
+
+function checkSetup() {
+    if (window.$currentPage !== 'nota.php') return;
+    
+    if (!businessProfile.bizName) {
+        const banner = document.createElement('div');
+        banner.id = 'setupBanner';
+        banner.style = `
+            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+            color: white;
+            padding: 1.5rem;
+            border-radius: 20px;
+            margin-bottom: 2rem;
+            display: flex;
+            gap: 1.5rem;
+            align-items: center;
+            box-shadow: 0 10px 25px -5px rgba(79, 70, 229, 0.3);
+            grid-column: span 2;
+            animation: fadeIn 0.8s ease;
+        `;
+        
+        banner.innerHTML = `
+            <div style="background: rgba(255,255,255,0.2); padding: 12px; border-radius: 12px; display: flex; align-items: center; justify-content: center;">
+                <i data-lucide="sparkles" style="width: 32px; height: 32px; color: #fbbf24;"></i>
+            </div>
+            <div style="flex: 1;">
+                <h3 style="margin: 0; font-size: 1.15rem; font-weight: 700; color: white;">Selamat Datang di SmartNote! ✨</h3>
+                <p style="margin: 5px 0 0; font-size: 0.9rem; opacity: 0.9; line-height: 1.5;">
+                    Aplikasi siap digunakan. Langkah pertama, silakan <b>lengkapi profil toko</b> Anda agar nama, logo, dan alamat muncul di nota yang Anda cetak.
+                </p>
+                <div style="display: flex; gap: 10px; margin-top: 15px;">
+                    <a href="settings.php" class="btn" style="background: #fbbf24; color: #92400e; font-weight: 700; padding: 0.6rem 1.2rem; font-size: 0.85rem; text-decoration: none; border-radius: 10px; display: flex; align-items: center; gap: 6px;">
+                        <i data-lucide="settings" style="width:16px"></i> Setel Profil Toko
+                    </a>
+                    <button onclick="this.parentElement.parentElement.parentElement.remove()" class="btn" style="background: transparent; color: white; border: 1px solid rgba(255,255,255,0.4); padding: 0.6rem 1.2rem; font-size: 0.85rem; border-radius: 10px;">
+                        Nanti Saja
+                    </button>
+                </div>
+            </div>
+        `;
+        
+        const container = document.querySelector('main.container');
+        if (container) container.prepend(banner);
+        if (typeof lucide !== 'undefined') lucide.createIcons();
+    }
+}

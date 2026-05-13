@@ -1,0 +1,181 @@
+/* 
+    FILE: nota_print.css
+    Optimasi Font Skala Kecil (Profesional) untuk A5
+*/
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap');
+
+.print-page {
+    width: 148mm;
+    /* Hapus height: 210mm agar tidak tumpah ke halaman kosong */
+    min-height: 200mm; 
+    padding: 8mm 10mm; /* Padding sedikit dikurangi */
+    background: white;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start; /* Paksa konten menempel ke atas */
+    box-sizing: border-box;
+    position: relative;
+    font-family: 'Inter', sans-serif;
+    color: #000;
+}
+
+/* Potong halaman hanya jika ada halaman berikutnya */
+.print-page:not(:last-child) {
+    page-break-after: always;
+}
+
+/* Header Section */
+.print-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    border-bottom: 1.5px solid #000;
+    padding-bottom: 0.4rem;
+    margin-bottom: 0.6rem;
+}
+
+.shop-info {
+    display: flex;
+    gap: 0.6rem;
+    align-items: center;
+    flex: 1;
+}
+
+.shop-info img {
+    width: 45px;
+    height: 45px;
+    object-fit: contain;
+}
+
+.shop-details h2 {
+    margin: 0;
+    font-size: 10pt;
+    text-transform: uppercase;
+    color: #000;
+    line-height: 1.1;
+    font-weight: 800;
+}
+
+.shop-details .biz-type {
+    margin: 0;
+    font-size: 7.5pt; /* Diperbesar sedikit */
+    font-weight: 700;
+    color: #333;
+}
+
+.shop-details .address {
+    margin: 0;
+    font-size: 7.5pt; /* Diperbesar agar sesuai permintaan */
+    color: #444;
+    max-width: 250px;
+    line-height: 1.3;
+}
+
+.nota-info {
+    text-align: right;
+    min-width: 150px;
+    font-size: 8pt;
+    line-height: 1.3;
+}
+
+.nota-info h1 {
+    margin: 0;
+    font-weight: 800;
+    font-size: 9.5pt; /* Judul diperbesar */
+    text-transform: uppercase;
+    border-bottom: 1.5px solid #000;
+    padding-bottom: 2px;
+    margin-bottom: 5px;
+}
+
+/* Table Section */
+.print-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.print-table th {
+    padding: 6px 4px;
+    font-size: 7.5pt;
+    font-weight: 800;
+    text-transform: uppercase;
+    color: #000;
+    border-bottom: 1.5px solid #000;
+    text-align: center;
+}
+
+.print-table th:nth-child(2) { text-align: left; }
+.print-table th:nth-child(4), .print-table th:nth-child(5) { text-align: right; }
+
+.print-table td {
+    padding: 5px 4px;
+    font-size: 7.5pt;
+    color: #000;
+    border-bottom: 1px solid #f1f1f1;
+    vertical-align: top;
+}
+
+/* Footer Section */
+.print-footer-container {
+    margin-top: 0.75rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+}
+
+.footer-left {
+    width: 55%;
+}
+
+.info-box {
+    background: #f8fafc;
+    border: 1px solid #f1f5f9;
+    border-radius: 4px;
+    padding: 6px 8px;
+    font-size: 7pt;
+    margin-bottom: 6px;
+    color: #475569;
+}
+
+.footer-right {
+    width: 40%;
+}
+
+.total-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 8.5pt;
+}
+
+.total-table td {
+    padding: 2px 0;
+}
+
+.total-row-grand {
+    font-weight: 800;
+    font-size: 10pt;
+    border-top: 2px solid #000;
+    color: #000;
+}
+
+.signature-section {
+    margin-top: 25px; /* Jarak dari tabel total */
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+}
+
+.sig-col {
+    width: 45%;
+    text-align: center;
+    font-size: 8pt;
+}
+
+.sig-space {
+    height: 55px; /* Ruang untuk tanda tangan basah */
+}
+
+.sig-col p {
+    margin: 2px 0;
+}

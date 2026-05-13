@@ -46,6 +46,10 @@
                     <input type="text" id="bizPhone" placeholder="0812...">
                 </div>
                 <div class="form-group">
+                    <label>Kota</label>
+                    <input type="text" id="bizCity" placeholder="Contoh: Pangkalan Bun">
+                </div>
+                <div class="form-group">
                     <label>Tanda Tangan (Nama Pemilik)</label>
                     <input type="text" id="bizOwner" placeholder="Nama Anda">
                 </div>
