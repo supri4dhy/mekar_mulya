@@ -1,4 +1,8 @@
-<?php include 'header.php'; ?>
+<?php 
+require_once 'auth.php';
+checkRole('admin');
+include 'header.php'; 
+?>
 
 <div class="input-section" style="grid-column: span 2;">
     <div class="card" style="max-width: 800px; margin: 0 auto; padding: 2.5rem;">
