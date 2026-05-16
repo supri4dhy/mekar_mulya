@@ -8,12 +8,12 @@ if (isset($_SESSION['username']) && $_SESSION['username'] === 'demo') {
     try {
         $pdo->beginTransaction();
         
-        // 1. Bersihkan tabel transaksi & master
+        // 1. Bersihkan tabel transaksi & master menggunakan DELETE agar tidak memicu auto-commit DDL
         $pdo->exec("SET FOREIGN_KEY_CHECKS = 0");
-        $pdo->exec("TRUNCATE TABLE invoice_items");
-        $pdo->exec("TRUNCATE TABLE invoices");
-        $pdo->exec("TRUNCATE TABLE master_items");
-        $pdo->exec("TRUNCATE TABLE customers");
+        $pdo->exec("DELETE FROM invoice_items");
+        $pdo->exec("DELETE FROM invoices");
+        $pdo->exec("DELETE FROM master_items");
+        $pdo->exec("DELETE FROM customers");
         $pdo->exec("SET FOREIGN_KEY_CHECKS = 1");
 
         // 2. Isi Data Dummy Barang/Jasa
@@ -30,8 +30,8 @@ if (isset($_SESSION['username']) && $_SESSION['username'] === 'demo') {
             ('Siti Aminah', '08567890123', 'Perum Pratama Blok C3')");
 
         // 4. Isi Data Dummy Nota
-        $pdo->exec("INSERT INTO invoices (invoice_number, invoice_date, customer_name, grand_total, note_footer) VALUES 
-            ('INV-DEMO-001', CURDATE(), 'Budi Santoso', 225000, 'Barang sudah dicek, garansi 7 hari.')");
+        $pdo->exec("INSERT INTO invoices (invoice_number, invoice_date, customer_name, discount, transport, service_fee, grand_total, note_footer) VALUES 
+            ('INV-DEMO-001', CURDATE(), 'Budi Santoso', 0, 0, 0, 225000, 'Barang sudah dicek, garansi 7 hari.')");
         
         $lastId = $pdo->lastInsertId();
         $pdo->exec("INSERT INTO invoice_items (invoice_id, description, qty, price, total) VALUES 
@@ -40,7 +40,9 @@ if (isset($_SESSION['username']) && $_SESSION['username'] === 'demo') {
 
         $pdo->commit();
     } catch (Exception $e) {
-        $pdo->rollBack();
+        if ($pdo->inTransaction()) {
+            $pdo->rollBack();
+        }
     }
 }
 

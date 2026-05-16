@@ -119,15 +119,30 @@
                 </h3>
                 <div class="form-group">
                     <label>Password Lama</label>
-                    <input type="password" id="oldPassword" placeholder="Masukkan password saat ini">
+                    <div style="position:relative; display:flex; align-items:center;">
+                        <input type="password" id="oldPassword" placeholder="Masukkan password saat ini" style="padding-right:2.8rem; width:100%;">
+                        <button type="button" onclick="togglePass('oldPassword', this)" style="position:absolute; right:10px; background:none; border:none; cursor:pointer; color:var(--text-muted); display:flex; align-items:center;">
+                            <i data-lucide="eye" style="width:18px; height:18px;"></i>
+                        </button>
+                    </div>
                 </div>
                 <div class="form-group">
                     <label>Password Baru</label>
-                    <input type="password" id="newPassword" placeholder="Masukkan password baru">
+                    <div style="position:relative; display:flex; align-items:center;">
+                        <input type="password" id="newPassword" placeholder="Masukkan password baru" style="padding-right:2.8rem; width:100%;">
+                        <button type="button" onclick="togglePass('newPassword', this)" style="position:absolute; right:10px; background:none; border:none; cursor:pointer; color:var(--text-muted); display:flex; align-items:center;">
+                            <i data-lucide="eye" style="width:18px; height:18px;"></i>
+                        </button>
+                    </div>
                 </div>
                 <div class="form-group">
                     <label>Konfirmasi Password Baru</label>
-                    <input type="password" id="confirmPassword" placeholder="Ulangi password baru">
+                    <div style="position:relative; display:flex; align-items:center;">
+                        <input type="password" id="confirmPassword" placeholder="Ulangi password baru" style="padding-right:2.8rem; width:100%;">
+                        <button type="button" onclick="togglePass('confirmPassword', this)" style="position:absolute; right:10px; background:none; border:none; cursor:pointer; color:var(--text-muted); display:flex; align-items:center;">
+                            <i data-lucide="eye" style="width:18px; height:18px;"></i>
+                        </button>
+                    </div>
                 </div>
                 <button class="btn" onclick="changePassword()" style="background: #e11d48; color: white; width: 100%; justify-content: center; margin-top: 1rem;">
                     <i data-lucide="key"></i> Update Password

@@ -3,7 +3,7 @@ session_start();
 
 require_once __DIR__ . '/database/db.php';
 
-function login($username, $password) {
+function login($username, $password, &$errorMsg = null) {
     global $pdo;
     try {
         $stmt = $pdo->prepare("SELECT * FROM users WHERE username = ?");
@@ -11,6 +11,10 @@ function login($username, $password) {
         $user = $stmt->fetch();
         
         if ($user) {
+            if (isset($user['status']) && $user['status'] === 'pending') {
+                $errorMsg = 'Akun Anda masih berstatus PENDING dan menunggu persetujuan Admin.';
+                return false;
+            }
             // Mendukung password_verify atau plain text untuk kemudahan demo awal
             if (password_verify($password, $user['password']) || $password === $user['password']) {
                 $_SESSION['user_id'] = $user['id'];
@@ -18,8 +22,12 @@ function login($username, $password) {
                 $_SESSION['role'] = $user['role']; // Simpan role di session
                 return true;
             }
+            $errorMsg = 'Username atau Password salah!';
+            return false;
         }
+        $errorMsg = 'Username tidak ditemukan!';
     } catch (Exception $e) {
+        $errorMsg = 'Terjadi kesalahan sistem.';
         return false;
     }
     return false;

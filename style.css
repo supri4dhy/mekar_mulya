@@ -1209,3 +1209,107 @@ input:focus {
         zoom: calc((100vw - 25px) / 560);
     }
 }
+
+/* Custom Premium Dialog Modal */
+.custom-alert-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(15, 23, 42, 0.6);
+    backdrop-filter: blur(8px);
+    z-index: 999999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: fadeIn 0.25s ease;
+}
+
+.custom-alert-box {
+    background: white;
+    border-radius: 28px;
+    padding: 2.5rem 2rem 2rem 2rem;
+    width: 90%;
+    max-width: 400px;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+    text-align: center;
+    border: 1px solid rgba(255, 255, 255, 0.8);
+    transform: scale(0.95);
+    animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
+@keyframes popIn {
+    to { transform: scale(1); }
+}
+
+.custom-alert-icon {
+    width: 64px;
+    height: 64px;
+    border-radius: 22px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1.25rem auto;
+}
+
+.custom-alert-icon.success {
+    background: #dcfce7;
+    color: #16a34a;
+    box-shadow: 0 10px 25px -5px rgba(22, 163, 74, 0.3);
+}
+
+.custom-alert-icon.error {
+    background: #fee2e2;
+    color: #dc2626;
+    box-shadow: 0 10px 25px -5px rgba(220, 38, 38, 0.3);
+}
+
+.custom-alert-icon.info {
+    background: #e0e7ff;
+    color: #4f46e5;
+    box-shadow: 0 10px 25px -5px rgba(79, 70, 229, 0.3);
+}
+
+.custom-alert-title {
+    font-size: 1.35rem;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 0.75rem;
+}
+
+.custom-alert-text {
+    font-size: 0.95rem;
+    color: var(--text-muted);
+    line-height: 1.5;
+    margin-bottom: 1.75rem;
+}
+
+.custom-alert-btn {
+    width: 100%;
+    padding: 0.85rem;
+    border-radius: 16px;
+    font-weight: 600;
+    font-size: 1rem;
+    cursor: pointer;
+    border: none;
+    transition: all 0.2s;
+}
+
+.custom-alert-btn.success {
+    background: #16a34a;
+    color: white;
+}
+.custom-alert-btn.success:hover { background: #15803d; }
+
+.custom-alert-btn.error {
+    background: #dc2626;
+    color: white;
+}
+.custom-alert-btn.error:hover { background: #b91c1c; }
+
+.custom-alert-btn.info {
+    background: var(--primary);
+    color: white;
+}
+.custom-alert-btn.info:hover { background: var(--primary-hover); }

@@ -2,13 +2,14 @@
 require_once 'auth.php';
 header('Content-Type: application/json');
 
-if (!isLoggedIn()) {
+$action = $_GET['action'] ?? '';
+$publicActions = ['registerUser', 'requestReset'];
+
+if (!isLoggedIn() && !in_array($action, $publicActions)) {
     http_response_code(403);
     echo json_encode(['error' => 'Unauthorized']);
     exit();
 }
-
-$action = $_GET['action'] ?? '';
 
 // Global PDO object from auth.php -> db.php
 global $pdo;
@@ -60,7 +61,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
         }
         echo json_encode($invoices);
     } elseif ($action === 'getUsers') {
-        $stmt = $pdo->query("SELECT id, username, created_at FROM users ORDER BY created_at DESC");
+        $stmt = $pdo->query("SELECT id, username, role, email, hp, status, created_at FROM users ORDER BY created_at DESC");
+        echo json_encode($stmt->fetchAll());
+    } elseif ($action === 'getPendingUsers') {
+        $stmt = $pdo->query("SELECT id, username, email, hp, created_at FROM users WHERE status = 'pending' ORDER BY created_at DESC");
+        echo json_encode($stmt->fetchAll());
+    } elseif ($action === 'getResetRequests') {
+        $stmt = $pdo->query("SELECT * FROM reset_requests WHERE status = 'pending' ORDER BY request_date DESC");
         echo json_encode($stmt->fetchAll());
     } elseif ($action === 'deleteUser') {
         $id = $_GET['id'];
@@ -86,15 +93,40 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     }
 } elseif ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($action === 'uploadLogo') {
-        if (isset($_FILES['logo'])) {
-            $ext = pathinfo($_FILES['logo']['name'], PATHINFO_EXTENSION);
-            $newName = 'logo.' . $ext;
+        if (isset($_FILES['logo']) && $_FILES['logo']['error'] === UPLOAD_ERR_OK) {
+            $tmpName = $_FILES['logo']['tmp_name'];
+            $newName = 'logo.webp';
             $target = __DIR__ . '/uploads/' . $newName;
-            if (move_uploaded_file($_FILES['logo']['tmp_name'], $target)) {
-                echo json_encode(['success' => true, 'path' => 'uploads/' . $newName]);
-            } else {
-                echo json_encode(['success' => false, 'error' => 'Gagal mengunggah file']);
+            
+            // Kompresi ke format WEBP untuk hemat bandwidth & storage dengan tetap menjaga transparansi
+            if (function_exists('imagecreatefromstring') && function_exists('imagewebp')) {
+                $imageData = @file_get_contents($tmpName);
+                $image = @imagecreatefromstring($imageData);
+                if ($image !== false) {
+                    imagepalettetotruecolor($image);
+                    imagealphablending($image, false);
+                    imagesavealpha($image, true);
+                    
+                    if (@imagewebp($image, $target, 80)) {
+                        imagedestroy($image);
+                        echo json_encode(['success' => true, 'path' => 'uploads/' . $newName]);
+                        exit();
+                    }
+                    imagedestroy($image);
+                }
             }
+            
+            // Fallback jika server belum mendukung konversi WEBP
+            $ext = pathinfo($_FILES['logo']['name'], PATHINFO_EXTENSION);
+            $fallbackName = 'logo.' . $ext;
+            $fallbackTarget = __DIR__ . '/uploads/' . $fallbackName;
+            if (move_uploaded_file($tmpName, $fallbackTarget)) {
+                echo json_encode(['success' => true, 'path' => 'uploads/' . $fallbackName]);
+            } else {
+                echo json_encode(['success' => false, 'error' => 'Gagal mengunggah file logo']);
+            }
+        } else {
+            echo json_encode(['success' => false, 'error' => 'Tidak ada file atau terjadi kesalahan unggah']);
         }
         exit();
     }
@@ -104,19 +136,95 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     if ($action === 'addUser') {
         $user = $data['username'];
         $pass = password_hash($data['password'], PASSWORD_DEFAULT);
+        $role = $data['role'] ?? 'user';
+        $email = $data['email'] ?? '';
+        $hp = $data['hp'] ?? '';
         try {
-            $stmt = $pdo->prepare("INSERT INTO users (username, password, role) VALUES (?, ?, 'user')");
-            $stmt->execute([$user, $pass]);
+            $stmt = $pdo->prepare("INSERT INTO users (username, password, role, email, hp, status) VALUES (?, ?, ?, ?, ?, 'active')");
+            $stmt->execute([$user, $pass, $role, $email, $hp]);
             echo json_encode(['success' => true]);
         } catch (Exception $e) {
             echo json_encode(['success' => false, 'error' => 'Username sudah ada atau kesalahan database']);
         }
+    } elseif ($action === 'registerUser') {
+        $username = trim($data['username'] ?? '');
+        $email = trim($data['email'] ?? '');
+        $hp = trim($data['hp'] ?? '');
+        $pass = password_hash($data['password'], PASSWORD_DEFAULT);
+        
+        try {
+            $stmt = $pdo->prepare("INSERT INTO users (username, password, role, email, hp, status) VALUES (?, ?, 'user', ?, ?, 'pending')");
+            $stmt->execute([$username, $pass, $email, $hp]);
+            echo json_encode(['success' => true]);
+        } catch (Exception $e) {
+            echo json_encode(['success' => false, 'error' => 'Username mungkin sudah terdaftar di sistem.']);
+        }
+    } elseif ($action === 'approveUser') {
+        $id = $data['id'];
+        $stmt = $pdo->prepare("UPDATE users SET status = 'active' WHERE id = ?");
+        $stmt->execute([$id]);
+        echo json_encode(['success' => true]);
+    } elseif ($action === 'rejectUser') {
+        $id = $data['id'];
+        $stmt = $pdo->prepare("DELETE FROM users WHERE id = ?");
+        $stmt->execute([$id]);
+        echo json_encode(['success' => true]);
     } elseif ($action === 'resetPassword') {
         $id = $data['id'];
         $newPass = password_hash($data['password'], PASSWORD_DEFAULT);
         $stmt = $pdo->prepare("UPDATE users SET password = ? WHERE id = ?");
         $stmt->execute([$newPass, $id]);
         echo json_encode(['success' => true]);
+    } elseif ($action === 'requestReset') {
+        $username = trim($data['username'] ?? '');
+        $contact = trim($data['contact'] ?? '');
+        $stmt = $pdo->prepare("SELECT id FROM users WHERE username = ? AND (email = ? OR hp = ?)");
+        $stmt->execute([$username, $contact, $contact]);
+        if ($stmt->fetch()) {
+            $stmtReq = $pdo->prepare("INSERT INTO reset_requests (username, status) VALUES (?, 'pending')");
+            $stmtReq->execute([$username]);
+            echo json_encode(['success' => true]);
+        } else {
+            echo json_encode(['success' => false, 'error' => 'Kombinasi Username dan Email / No. HP tidak cocok di sistem.']);
+        }
+    } elseif ($action === 'approveReset') {
+        $reqId = $data['req_id'];
+        $username = $data['username'];
+        $newPass = password_hash($data['password'], PASSWORD_DEFAULT);
+        
+        $stmtU = $pdo->prepare("UPDATE users SET password = ? WHERE username = ?");
+        $stmtU->execute([$newPass, $username]);
+        
+        $stmtR = $pdo->prepare("UPDATE reset_requests SET status = 'completed' WHERE id = ?");
+        $stmtR->execute([$reqId]);
+        
+        echo json_encode(['success' => true]);
+    } elseif ($action === 'rejectReset') {
+        $reqId = $data['req_id'];
+        $stmt = $pdo->prepare("UPDATE reset_requests SET status = 'rejected' WHERE id = ?");
+        $stmt->execute([$reqId]);
+        echo json_encode(['success' => true]);
+    } elseif ($action === 'editUser') {
+        $id = $data['id'];
+        $username = $data['username'];
+        $role = $data['role'];
+        $email = $data['email'] ?? '';
+        $hp = $data['hp'] ?? '';
+        $password = $data['password'] ?? '';
+        
+        try {
+            if (!empty($password)) {
+                $newPass = password_hash($password, PASSWORD_DEFAULT);
+                $stmt = $pdo->prepare("UPDATE users SET username = ?, role = ?, email = ?, hp = ?, password = ? WHERE id = ?");
+                $stmt->execute([$username, $role, $email, $hp, $newPass, $id]);
+            } else {
+                $stmt = $pdo->prepare("UPDATE users SET username = ?, role = ?, email = ?, hp = ? WHERE id = ?");
+                $stmt->execute([$username, $role, $email, $hp, $id]);
+            }
+            echo json_encode(['success' => true]);
+        } catch (Exception $e) {
+            echo json_encode(['success' => false, 'error' => 'Username mungkin sudah ada atau terjadi kesalahan.']);
+        }
     } elseif ($action === 'saveSettings') {
         foreach ($data as $key => $value) {
             $stmt = $pdo->prepare("INSERT INTO settings (meta_key, meta_value) VALUES (?, ?) ON DUPLICATE KEY UPDATE meta_value = ?");
@@ -152,9 +260,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
         foreach ($data as $pattern) $stmt->execute([$pattern]);
         echo json_encode(['success' => true]);
     } elseif ($action === 'saveInvoice') {
+        $index = isset($_GET['index']) ? $_GET['index'] : null;
+        
+        // Batasan untuk Demo (Maksimal 5 Nota)
+        if ($_SESSION['role'] === 'demo' && ($index === null || $index === '')) {
+            $stmtCount = $pdo->query("SELECT COUNT(*) FROM invoices");
+            $count = $stmtCount->fetchColumn();
+            if ($count >= 5) {
+                echo json_encode(['success' => false, 'error' => 'Akun demo dibatasi maksimal hanya dapat menyimpan 5 nota.']);
+                exit();
+            }
+        }
+
         $pdo->beginTransaction();
         try {
-            $index = isset($_GET['index']) ? $_GET['index'] : null;
             $invNumber = $data['number'];
 
             // Jika update, cari ID berdasarkan nomor (karena script.js kirim index array)

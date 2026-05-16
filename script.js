@@ -44,6 +44,62 @@ function showToast(message, type = 'success') {
     }, 3000);
 }
 
+function customAlert(title, message, type = 'success', onConfirm = null) {
+    const overlay = document.createElement('div');
+    overlay.className = 'custom-alert-overlay';
+    
+    let iconName = 'check-circle';
+    if(type === 'error') iconName = 'alert-circle';
+    if(type === 'info') iconName = 'info';
+    
+    overlay.innerHTML = `
+        <div class="custom-alert-box">
+            <div class="custom-alert-icon ${type}">
+                <i data-lucide="${iconName}" style="width: 36px; height: 36px;"></i>
+            </div>
+            <div class="custom-alert-title">${title}</div>
+            <div class="custom-alert-text">${message}</div>
+            <button class="custom-alert-btn ${type}">Mengerti</button>
+        </div>
+    `;
+    
+    document.body.appendChild(overlay);
+    if(typeof lucide !== 'undefined') lucide.createIcons();
+    
+    const btn = overlay.querySelector('.custom-alert-btn');
+    btn.onclick = () => {
+        overlay.remove();
+        if(onConfirm) onConfirm();
+    };
+}
+
+function customConfirm(title, message, onConfirm) {
+    const overlay = document.createElement('div');
+    overlay.className = 'custom-alert-overlay';
+    
+    overlay.innerHTML = `
+        <div class="custom-alert-box">
+            <div class="custom-alert-icon error">
+                <i data-lucide="help-circle" style="width: 36px; height: 36px;"></i>
+            </div>
+            <div class="custom-alert-title">${title}</div>
+            <div class="custom-alert-text">${message}</div>
+            <div style="display: flex; gap: 1rem;">
+                <button class="btn" style="flex: 1; background: #f1f5f9; color: var(--text); justify-content: center;" onclick="this.closest('.custom-alert-overlay').remove()">Batal</button>
+                <button class="btn btn-primary" style="flex: 1; justify-content: center; background: #dc2626; border: none;" id="confirmYesBtn">Ya, Lanjutkan</button>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(overlay);
+    if(typeof lucide !== 'undefined') lucide.createIcons();
+    
+    overlay.querySelector('#confirmYesBtn').onclick = () => {
+        overlay.remove();
+        onConfirm();
+    };
+}
+
 function parseCurrency(str) {
     if (str === null || str === undefined) return 0;
     if (typeof str === 'number') return str;
